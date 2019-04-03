@@ -1,0 +1,31 @@
+/eclipse-bin/
+/bin
+/build
+/pkg
+.classpath
+.project
+.settings
+.vscode/
+.DS_Store
+*.swp
+*.swo
+*.orig
+mock_*.go
+### JetBrains+all Patch ###
+# Ignores the whole .idea folder and all .iml files
+# See https://github.com/joeblau/gitignore.io/issues/186 and https://github.com/joeblau/gitignore.io/issues/360
+
+.idea/
+
+# Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-249601023
+
+*.iml
+modules.xml
+.idea/misc.xml
+*.ipr
+
+**/*.swp
+
+assets
+
+# End of https://www.gitignore.io/api/jetbrains+all
