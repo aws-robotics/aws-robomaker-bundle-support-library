@@ -5,10 +5,10 @@ package stream
 
 import (
 	"fmt"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"go.amzn.com/robomaker/bundle_support/file_system"
 	"testing"
 )
 

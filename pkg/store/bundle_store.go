@@ -7,8 +7,8 @@ package store
 
 import (
 	"fmt"
-	"go.amzn.com/robomaker/bundle_support/extractors"
-	"go.amzn.com/robomaker/bundle_support/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
 	"os"
 	"path/filepath"
 	"sync"

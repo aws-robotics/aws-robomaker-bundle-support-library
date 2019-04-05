@@ -5,10 +5,11 @@ package archive
 
 import (
 	"fmt"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"go.amzn.com/robomaker/bundle_support/extractors"
-	"go.amzn.com/robomaker/bundle_support/store"
+
 	"testing"
 )
 

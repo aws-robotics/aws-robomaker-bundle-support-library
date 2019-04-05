@@ -7,7 +7,7 @@ package bundle
 
 import (
 	"fmt"
-	"go.amzn.com/robomaker/bundle_support/store"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"path/filepath"
 )
 

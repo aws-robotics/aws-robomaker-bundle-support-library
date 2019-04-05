@@ -5,11 +5,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"time"
-
-	"go.amzn.com/robomaker/bundle_support"
-	"go.amzn.com/robomaker/bundle_support/file_system"
-	"go.amzn.com/robomaker/bundle_support/store"
 )
 
 const (
@@ -27,7 +26,7 @@ func main() {
 	localFileSystem := file_system.NewLocalFS()
 	bundleStore := store.NewSimpleStore(BundleStoreRootLocation, localFileSystem)
 
-	bundleProvider := bundle_support.NewBundleProvider(bundleStore)
+	bundleProvider := bundle.NewBundleProvider(bundleStore)
 	bundleProvider.SetProgressCallback(printProgress)
 
 	// Start measuring the time it takes to extract
