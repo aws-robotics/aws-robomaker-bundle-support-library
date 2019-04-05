@@ -5,7 +5,7 @@ package extractors
 
 import (
 	"archive/tar"
-	"go.amzn.com/robomaker/bundle_support/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
 	"io"
 )
 

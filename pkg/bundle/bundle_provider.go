@@ -1,21 +1,19 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package bundle_support
+package bundle
 
 //go:generate $MOCKGEN -destination=mock_bundle_manager.go -package=bundle_support go.amzn.com/robomaker/bundle_support BundleProvider
 
 import (
 	"fmt"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/archive"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
 	"io"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-
-	"go.amzn.com/robomaker/bundle_support/archive"
-	"go.amzn.com/robomaker/bundle_support/bundle"
-	"go.amzn.com/robomaker/bundle_support/store"
-	"go.amzn.com/robomaker/bundle_support/stream"
 )
 
 /*
@@ -27,12 +25,12 @@ It does this by:
 */
 type BundleProvider interface {
 	// With the URL to the bundle, extract bundle files to the cache, and return a useable Bundle
-	GetBundle(url string) (bundle.Bundle, error)
+	GetBundle(url string) (Bundle, error)
 
 	// Get the bundle from the URL, and expect the content id to match expectedContentId.
 	// If it doesn't match, an error is thrown and we will get nil for bundle
 	// NOTE: Any double quotes character in expectedContentId will be ignored.
-	GetVersionedBundle(url string, expectedContentId string) (bundle.Bundle, error)
+	GetVersionedBundle(url string, expectedContentId string) (Bundle, error)
 
 	// Set a progress callback function so that it will be called when we have a progress tick
 	SetProgressCallback(callback ProgressCallback)
@@ -81,15 +79,15 @@ func (b *bundleProvider) SetProgressCallbackRate(rateSeconds int) {
 	b.progressCallbackRateInSeconds = rateSeconds
 }
 
-func (b *bundleProvider) GetVersionedBundle(url string, expectedContentId string) (bundle.Bundle, error) {
+func (b *bundleProvider) GetVersionedBundle(url string, expectedContentId string) (Bundle, error) {
 	return b.getBundle(url, expectedContentId)
 }
 
-func (b *bundleProvider) GetBundle(url string) (bundle.Bundle, error) {
+func (b *bundleProvider) GetBundle(url string) (Bundle, error) {
 	return b.getBundle(url, "")
 }
 
-func (b *bundleProvider) getBundle(url string, expectedContentId string) (bundle.Bundle, error) {
+func (b *bundleProvider) getBundle(url string, expectedContentId string) (Bundle, error) {
 	// convert our URL to a readable seekable stream
 	stream, contentId, contentLength, streamErr := stream.PathToStream(url, b.s3Client)
 	if streamErr != nil {

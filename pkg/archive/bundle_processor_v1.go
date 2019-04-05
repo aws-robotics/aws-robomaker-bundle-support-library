@@ -4,10 +4,10 @@
 package archive
 
 import (
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"github.com/google/uuid"
-	"go.amzn.com/robomaker/bundle_support/bundle"
-	"go.amzn.com/robomaker/bundle_support/extractors"
-	"go.amzn.com/robomaker/bundle_support/store"
 	"io"
 )
 

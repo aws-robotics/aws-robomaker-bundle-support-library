@@ -5,9 +5,9 @@ package bundle
 
 import (
 	"fmt"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"go.amzn.com/robomaker/bundle_support/store"
 	"testing"
 )
 
