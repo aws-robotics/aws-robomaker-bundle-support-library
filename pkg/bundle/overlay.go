@@ -1,7 +1,7 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package archive
+package bundle
 
 // Overlays and Overlay mirror the json structure of the overlays documented in V2 format here:
 // https://github.com/colcon/colcon-bundle/blob/master/BUNDLE_FORMAT.md

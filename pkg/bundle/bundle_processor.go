@@ -1,10 +1,9 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package archive
+package bundle
 
 import (
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"io"
 )
@@ -19,7 +18,7 @@ const (
 type BundleProcessor interface {
 
 	// Extract takes the bundle bytes and extracts everything into the bundle store
-	Extract(inputStream io.ReadSeeker, bundleCache store.BundleStore) (bundle.Bundle, error)
+	Extract(inputStream io.ReadSeeker, bundleCache store.BundleStore) (Bundle, error)
 }
 
 func BundleProcessorForVersion(version string) BundleProcessor {

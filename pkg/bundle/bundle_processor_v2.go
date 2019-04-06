@@ -1,14 +1,13 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package archive
+package bundle
 
 import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"io"
@@ -30,7 +29,7 @@ func NewBundleProcessorV2() BundleProcessor {
 type bundleProcessorV2 struct {
 }
 
-func (b *bundleProcessorV2) Extract(inputStream io.ReadSeeker, bundleStore store.BundleStore) (bundle.Bundle, error) {
+func (b *bundleProcessorV2) Extract(inputStream io.ReadSeeker, bundleStore store.BundleStore) (Bundle, error) {
 
 	// obtain the metadata from the bundle bytes
 	metadataTarReader, metadataErr := getMetadataTarReader(inputStream)
@@ -73,7 +72,7 @@ func (b *bundleProcessorV2) Extract(inputStream io.ReadSeeker, bundleStore store
 	_, _ = inputStream.Seek(0, io.SeekEnd)
 
 	// create a new bundle with item paths
-	return bundle.NewBundle(bundleStore, itemKeys), nil
+	return NewBundle(bundleStore, itemKeys), nil
 }
 
 // from the input stream get the metadata tar reader

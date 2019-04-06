@@ -3,9 +3,9 @@
 
 package file_system
 
-//go:generate $MOCKGEN -destination=mock_file_system.go -package=file_system go.amzn.com/robomaker/bundle_support/file_system FileSystem
-//go:generate $MOCKGEN -destination=mock_file.go -package=file_system go.amzn.com/robomaker/bundle_support/file_system File
-//go:generate $MOCKGEN -destination=mock_file_info.go -package=file_system go.amzn.com/robomaker/bundle_support/file_system FileInfo
+//go:generate mockgen -destination=mock_file_system.go -package=file_system github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileSystem
+//go:generate mockgen -destination=mock_file.go -package=file_system github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system File
+//go:generate mockgen -destination=mock_file_info.go -package=file_system github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileInfo
 
 import (
 	"io"

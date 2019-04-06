@@ -3,7 +3,7 @@
 
 package stream
 
-//go:generate $MOCKGEN -destination=mock_s3_client.go -package=stream github.com/aws/aws-sdk-go/service/s3/s3iface S3API
+//go:generate mockgen -destination=mock_s3_client.go -package=stream github.com/aws/aws-sdk-go/service/s3/s3iface S3API
 
 import (
 	"crypto/md5"

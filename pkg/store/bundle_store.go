@@ -3,7 +3,7 @@
 
 package store
 
-//go:generate $MOCKGEN -destination=mock_bundle_store.go -package=store go.amzn.com/robomaker/bundle_support/store BundleStore
+//go:generate mockgen -destination=mock_bundle_store.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store BundleStore
 
 import (
 	"fmt"

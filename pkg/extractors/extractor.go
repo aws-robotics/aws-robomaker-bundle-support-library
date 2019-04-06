@@ -3,8 +3,8 @@
 
 package extractors
 
-//go:generate $MOCKGEN -destination=mock_extractor.go -package=extractors go.amzn.com/robomaker/bundle_support/extractors Extractor
-//go:generate $MOCKGEN -destination=mock_archiver.go -package=extractors go.amzn.com/robomaker/bundle_support/3p/archiver Archiver
+//go:generate mockgen -destination=mock_extractor.go -package=extractors github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors Extractor
+//go:generate mockgen -destination=mock_archiver.go -package=extractors github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/3p/archiver Archiver
 
 import (
 	"archive/tar"

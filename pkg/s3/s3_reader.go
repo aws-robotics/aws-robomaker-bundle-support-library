@@ -3,7 +3,7 @@
 
 package s3
 
-//go:generate $MOCKGEN -destination=mock_s3.go -package=s3 github.com/aws/aws-sdk-go/service/s3/s3iface S3API
+//go:generate mockgen -destination=mock_s3.go -package=s3 github.com/aws/aws-sdk-go/service/s3/s3iface S3API
 
 import (
 	"fmt"
