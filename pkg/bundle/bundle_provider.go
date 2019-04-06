@@ -3,11 +3,10 @@
 
 package bundle
 
-//go:generate $MOCKGEN -destination=mock_bundle_manager.go -package=bundle_support go.amzn.com/robomaker/bundle_support BundleProvider
+//go:generate mockgen -destination=mock_bundle_provider.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle BundleProvider
 
 import (
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/archive"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
 	"io"
@@ -110,7 +109,7 @@ func (b *bundleProvider) getBundle(url string, expectedContentId string) (Bundle
 	}
 
 	// create a bundle archive for the stream
-	bundleArchive, bundleArchiveErr := archive.NewBundleArchive(stream)
+	bundleArchive, bundleArchiveErr := NewBundleArchive(stream)
 	if bundleArchiveErr != nil {
 		return nil, NewBundleError(bundleArchiveErr, ERROR_TYPE_FORMAT)
 	}

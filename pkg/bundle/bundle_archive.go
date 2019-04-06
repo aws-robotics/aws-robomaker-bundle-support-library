@@ -1,13 +1,12 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package archive
+package bundle
 
 import (
 	"archive/tar"
 	"errors"
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"io"
@@ -24,7 +23,7 @@ type BundleArchive interface {
 	Version() string
 
 	// Extract everything into the cache
-	Extract(bundleCache store.BundleStore) (bundle.Bundle, error)
+	Extract(bundleCache store.BundleStore) (Bundle, error)
 }
 
 type bundleArchive struct {
@@ -61,7 +60,7 @@ func (b *bundleArchive) Version() string {
 	return b.version
 }
 
-func (b *bundleArchive) Extract(bundleStore store.BundleStore) (bundle.Bundle, error) {
+func (b *bundleArchive) Extract(bundleStore store.BundleStore) (Bundle, error) {
 	return b.bundleProcessor.Extract(b.inputStream, bundleStore)
 }
 

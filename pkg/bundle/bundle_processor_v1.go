@@ -1,10 +1,9 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package archive
+package bundle
 
 import (
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"github.com/google/uuid"
@@ -18,7 +17,7 @@ func NewBundleProcessorV1() BundleProcessor {
 // Bundle v1 simply extracts tar.gz
 type bundleProcessorV1 struct{}
 
-func (b *bundleProcessorV1) Extract(inputStream io.ReadSeeker, bundleStore store.BundleStore) (bundle.Bundle, error) {
+func (b *bundleProcessorV1) Extract(inputStream io.ReadSeeker, bundleStore store.BundleStore) (Bundle, error) {
 	// create a bundle extractor that knows how to extract the bundle
 	bundleExtractor := extractors.NewBundleV1Extractor(inputStream)
 
@@ -29,5 +28,5 @@ func (b *bundleProcessorV1) Extract(inputStream io.ReadSeeker, bundleStore store
 	if putErr != nil {
 		return nil, putErr
 	}
-	return bundle.NewBundle(bundleStore, []string{bundleKey}), nil
+	return NewBundle(bundleStore, []string{bundleKey}), nil
 }

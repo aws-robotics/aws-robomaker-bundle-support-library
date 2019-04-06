@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	rootPath          = "/testing_root"
+	testRootPath          = "/testing_root"
 	containerRootPath = "/container_root"
 )
 
@@ -40,7 +40,7 @@ func TestBundle_SourceCommands_GivesExpectedCommands(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockBundleStore := store.NewMockBundleStore(ctrl)
-	mockBundleStore.EXPECT().RootPath().Return(rootPath).AnyTimes()
+	mockBundleStore.EXPECT().RootPath().Return(testRootPath).AnyTimes()
 
 	bundle := NewBundle(mockBundleStore, itemKeys)
 	sourceCommands := bundle.SourceCommands()
