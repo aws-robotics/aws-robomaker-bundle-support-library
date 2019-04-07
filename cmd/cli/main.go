@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,23 +15,39 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "Bundle Info"
-	app.Usage = "Get source command for bundle"
+	app.Name = "Bundle Helper"
+	app.Usage = "Extracts a bundle and prints the command to source the bundle into a shell environment. " +
+		"Will intelligently cache in the cache directory."
 	app.Flags = []cli.Flag{
-		cli.StringFlag{Name: "bundle", Value: "", Usage: "Path to bundle file"},
-		cli.StringFlag{Name: "prefix", Value: "", Usage: "Prefix to put onto the source command"},
+		cli.StringFlag{Name: "bundle", Value: "", Usage: "Path to bundle archive"},
+		cli.StringFlag{Name: "prefix", Value: "", Usage: "Prefix to prepend onto the source command"},
+		cli.StringFlag{Name: "cache", Value: "./cache", Usage: "Path to store extracted overlays"},
 	}
 	app.Action = func(c *cli.Context) error {
-		fmt.Println("Opening ", c.String("bundle"))
-		cache_path := "./cache"
-		bundle_store := store.NewSimpleStore(cache_path, file_system.NewLocalFS())
+		cachePath := "./cache"
+		bundleStore := store.NewSimpleStore(cachePath, file_system.NewLocalFS())
 
-		bundle_path := c.String("bundle")
-		prefix_path := c.String("prefix")
+		bundlePath := c.String("bundle")
+		prefixPath := c.String("prefix")
 
-		files, err := ioutil.ReadDir(cache_path)
+		if bundlePath == "" {
+			err := errors.New("--bundle argument is required")
+			log.Fatal(err)
+			return err
+		}
+
+		if _, err := os.Stat(cachePath); os.IsNotExist(err) {
+			err = os.Mkdir(cachePath, os.ModePerm)
+			if err != nil {
+				log.Fatal(err)
+				return err
+			}
+		}
+
+		files, err := ioutil.ReadDir(cachePath)
 		if err != nil {
 			log.Fatal(err)
+			return err
 		}
 
 		var keys []string
@@ -40,22 +57,22 @@ func main() {
 			}
 		}
 
-		err = bundle_store.Load(keys)
+		err = bundleStore.Load(keys)
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
 
-		bundle_provider := bundle.NewBundleProvider(bundle_store)
-		b, err := bundle_provider.GetBundle(bundle_path)
+		bundle_provider := bundle.NewBundleProvider(bundleStore)
+		b, err := bundle_provider.GetBundle(bundlePath)
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
 		for i := 0; i < len(b.PosixSourceCommands()); i++ {
-			fmt.Print(b.PosixSourceCommandsUsingLocation(prefix_path)[i])
+			fmt.Print(b.PosixSourceCommandsUsingLocation(prefixPath)[i])
 		}
-
+		fmt.Print("\n")
 		return nil
 	}
 	app.Run(os.Args)
