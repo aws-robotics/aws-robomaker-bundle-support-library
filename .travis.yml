@@ -1,0 +1,50 @@
+language: go
+sudo: false
+matrix:
+  include:
+    # "1.x" always refers to the latest Go version, inc. the patch release.
+    # e.g. "1.x" is 1.11 until 1.11.1 is available.
+    - go: 1.x
+      env: LATEST=true GO111MODULE=on
+    - go: 1.11.x
+      env: GO111MODULE=on
+    - go: tip
+      env: GO111MODULE=on
+  allow_failures:
+    - go: tip
+
+before_install:
+  # gox simplifies building for multiple architectures
+  - go get github.com/mitchellh/gox
+  - go get github.com/golang/mock/gomock
+  - go install github.com/golang/mock/mockgen
+
+install:
+  - # skip
+
+script:
+  - diff -u <(echo -n) <(gofmt -d .)
+  - go build ./...
+  - go generate ./...
+  - go test -v -race ./...
+  # Only build binaries from the latest Go release.
+  - if [ "${LATEST}" = "true" ]; then gox -osarch="darwin/amd64 windows/amd64 linux/amd64 linux/arm" -output="bundle-helper.{{.OS}}.{{.Arch}}" -verbose ./cmd/cli; fi
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    # Your *encrypted* GitHub key, as the output of the Travis CI CLI tool.
+    secure: "uaw5aOap5ZFqBKBGNf4l4dh0o7uaECiKAdUAgab0DaFz6ZDOXPoSuhYD3/8U8es5gshYex0D03vyPIis+I/KW0+dX6P4RO8sWQbR6zdOcHPxo3SLBc/KB5X8jxCmOCFPGuEPRS1zIMZ4L5z+iMQCv96LXT/Nl8pnmELH4wR3y+Ppw4a5mRY3zjxxLM9ksKdO/4aDKQFEOpIMM5nszRT4uKVwdqcjBHdnC7YrHCXIHXTD5HlqTnMXlGNLXMWps7hvwaAY+SdkAobf3K9iVs7EuFVUAKfA3ZCwcoFg/AtopcF/dLADVlnzJyBWJLJBXqQ+0n2QZ1NZnLaZA8exIFWwkohWT9Da4QlsuD8HIdsShIqYWsNSh6dxI7zmXhL4GiLTQzCWb1gvVTyVyPvpwei0dG8mPBXIvFoZlC+aYy5jyY27gUQ6YSwAw6JSTv08yKBT1kSNmCvLz43BJyaR20ggzs/6ORYRKP6jw0+MzAqrT5jMiOOMlwHx3Pq2m/ucuS8yNeiO4fXzaWgJGbsPCCqPiR++7usRrrGFaoUWVKJnLmsjqkWkPmv348iMNvofq9yCVIQeUJ79yh0unG/meVpNySSg6qJ+xlna1Z1KAKn0PrSaTJXRyB/eynyHINOAhkaZGrmbKAk8A9+CK80+1yziSIBKkVUWijBRVf20EKQHKfg="
+  file:
+  # The names of the binaries to output, based on the -output template passed to gox.
+  - bundle-helper.windows.amd64.exe
+  - bundle-helper.darwin.amd64
+  - bundle-helper.linux.amd64
+  - bundle-helper.linux.arm
+  on:
+    # What to repository to build
+    repo: aws-robotics/aws-robomaker-bundle-support-library
+    # Only build binaries for tagged commits
+    tags: true
+    condition: $LATEST = true
