@@ -8,28 +8,24 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"io"
 	"io/ioutil"
 )
 
 const (
-	metadataFileName = "metadata.tar.gz"
+	v2MetadataFileName = "metadata.tar.gz"
 	overlaysFileName = "overlays.json"
 )
 
-var EmptyOverlays Overlays
-
-func NewBundleProcessorV2() BundleProcessor {
+func newBundleProcessorV2() bundleProcessor {
 	return &bundleProcessorV2{}
 }
 
-// Bundle v2 processor knows how to parse overlays and process them accordingly
+// bundle v2 processor knows how to parse overlays and process them accordingly
 type bundleProcessorV2 struct {
 }
 
-func (b *bundleProcessorV2) Extract(inputStream io.ReadSeeker, bundleStore store.BundleStore) (Bundle, error) {
+func (b *bundleProcessorV2) extract(inputStream io.ReadSeeker, bundleStore Cache) (Bundle, error) {
 
 	// obtain the metadata from the bundle bytes
 	metadataTarReader, metadataErr := getMetadataTarReader(inputStream)
@@ -45,7 +41,7 @@ func (b *bundleProcessorV2) Extract(inputStream io.ReadSeeker, bundleStore store
 
 	var itemKeys []string
 
-	// for every overlay, extract them into the bundle store
+	// for every overlay, Extract them into the bundle store
 	for _, overlay := range overlays.Overlays {
 
 		fmt.Printf("Processing overlay: %+v\n", overlay)
@@ -55,7 +51,7 @@ func (b *bundleProcessorV2) Extract(inputStream io.ReadSeeker, bundleStore store
 			return nil, overlayErr
 		}
 
-		tarGzExtractor := extractors.ExtractorFromFileName(overlayReader, overlay.FileName)
+		tarGzExtractor := extractorFromFileName(overlayReader, overlay.FileName)
 		if tarGzExtractor == nil {
 			return nil, fmt.Errorf("cannot create extractor for overlay: %s", overlay.FileName)
 		}
@@ -72,12 +68,12 @@ func (b *bundleProcessorV2) Extract(inputStream io.ReadSeeker, bundleStore store
 	_, _ = inputStream.Seek(0, io.SeekEnd)
 
 	// create a new bundle with item paths
-	return NewBundle(bundleStore, itemKeys), nil
+	return newBundle(bundleStore, itemKeys), nil
 }
 
 // from the input stream get the metadata tar reader
 func getMetadataTarReader(inputStream io.ReadSeeker) (*tar.Reader, error) {
-	tarReader := extractors.TarReaderFromStream(inputStream)
+	tarReader := tarReaderFromStream(inputStream)
 	// skip past the version file and get to the metadata.tar.gz file
 	tarReader.Next()
 	metadataHeader, metadataErr := tarReader.Next()
@@ -86,11 +82,11 @@ func getMetadataTarReader(inputStream io.ReadSeeker) (*tar.Reader, error) {
 	}
 
 	// ensure that we are now pointing to the metadata file
-	if metadataHeader.Name != metadataFileName {
+	if metadataHeader.Name != v2MetadataFileName {
 		return nil, fmt.Errorf("unexpected metadata file: %s", metadataHeader.Name)
 	}
 
-	// create a limit reader in order to extract this metadata file
+	// create a limit reader in order to Extract this metadata file
 	metadataReader := io.LimitReader(tarReader, metadataHeader.Size)
 
 	// now, get a tar reader from this metadataReader
@@ -103,7 +99,7 @@ func getMetadataTarReader(inputStream io.ReadSeeker) (*tar.Reader, error) {
 	return tar.NewReader(metadataTarGzReader), nil
 }
 
-func getOverlays(metadataTarReader *tar.Reader) (Overlays, error) {
+func getOverlays(metadataTarReader *tar.Reader) (*overlays, error) {
 
 	// iterate headers in the metadata tar file and process each file in the tar
 	for {
@@ -112,29 +108,29 @@ func getOverlays(metadataTarReader *tar.Reader) (Overlays, error) {
 			// we there are no more headers, we finish
 			break
 		} else if err != nil {
-			return EmptyOverlays, err
+			return nil, err
 		}
 
 		// if we find the overlays file, read the bytes and parse it
 		if header.Name == overlaysFileName {
 			overlayBytes, overlayBytesErr := ioutil.ReadAll(metadataTarReader)
 			if overlayBytesErr != nil {
-				return EmptyOverlays, overlayBytesErr
+				return nil, overlayBytesErr
 			}
 
-			var overlays Overlays
+			var overlays overlays
 			// unmarshal json
 			jsonErr := json.Unmarshal(overlayBytes, &overlays)
 			if jsonErr != nil {
-				return EmptyOverlays, fmt.Errorf("unable to parse JSON of the overlays file: %s", jsonErr)
+				return nil, fmt.Errorf("unable to parse JSON of the overlays file: %s", jsonErr)
 			}
-			return overlays, nil
+			return &overlays, nil
 		}
 	}
-	return EmptyOverlays, fmt.Errorf("overlays file not find in metadata")
+	return nil, fmt.Errorf("overlays file not find in metadata")
 }
 
-func getReaderForOverlay(overlay Overlay, inputStream io.ReadSeeker) (io.Reader, error) {
+func getReaderForOverlay(overlay overlay, inputStream io.ReadSeeker) (io.Reader, error) {
 	// now we seek and create a limit reader, and get extractor
 	_, seekError := inputStream.Seek(int64(overlay.Offset), io.SeekStart)
 

@@ -17,15 +17,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
-type S3ReaderConfig struct {
+type s3ReaderConfig struct {
 	NumRetries int
 	RetryWait  time.Duration
 	BufferSize int64
 }
 
-func NewS3ReaderConfig() S3ReaderConfig {
+func newS3ReaderConfig() s3ReaderConfig {
 	//Retry up to 20 seconds at 5 second intervals
-	return S3ReaderConfig{
+	return s3ReaderConfig{
 		NumRetries: 4,
 		RetryWait:  time.Duration(5) * time.Second,
 		BufferSize: 5 * 1024 * 1024, //5MB,
@@ -33,8 +33,8 @@ func NewS3ReaderConfig() S3ReaderConfig {
 }
 
 //Implements io.ReadSeeker
-type S3Reader struct {
-	config        S3ReaderConfig
+type s3Reader struct {
+	config        s3ReaderConfig
 	buffer        []byte
 	bufferStart   int64
 	bufferEnd     int64
@@ -46,8 +46,8 @@ type S3Reader struct {
 	Etag          string
 }
 
-func newS3Reader(s3Api s3iface.S3API, bucket string, key string, contentLength int64, etag string, config S3ReaderConfig) *S3Reader {
-	return &S3Reader{
+func newS3Reader(s3Api s3iface.S3API, bucket string, key string, contentLength int64, etag string, config s3ReaderConfig) *s3Reader {
+	return &s3Reader{
 		buffer:        make([]byte, config.BufferSize),
 		bufferStart:   0,
 		bufferEnd:     0,
@@ -69,11 +69,11 @@ func (e *S3ReadError) Error() string {
 	return e.err.Error()
 }
 
-func NewS3Reader(s3Api s3iface.S3API, bucket string, key string) (*S3Reader, error) {
-	return NewS3ReaderWithConfig(s3Api, bucket, key, NewS3ReaderConfig())
+func newS3ReaderBucketAndKey(s3Api s3iface.S3API, bucket string, key string) (*s3Reader, error) {
+	return newS3ReaderWithConfig(s3Api, bucket, key, newS3ReaderConfig())
 }
 
-func NewS3ReaderWithConfig(s3Api s3iface.S3API, bucket string, key string, config S3ReaderConfig) (*S3Reader, error) {
+func newS3ReaderWithConfig(s3Api s3iface.S3API, bucket string, key string, config s3ReaderConfig) (*s3Reader, error) {
 	resp, err := s3Api.HeadObject(&s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -91,7 +91,7 @@ func NewS3ReaderWithConfig(s3Api s3iface.S3API, bucket string, key string, confi
  * This is useful for large objects and/or spotty connections,
  * where connection issues may occur when reading from the Body
  */
-func (r *S3Reader) Read(p []byte) (n int, err error) {
+func (r *s3Reader) Read(p []byte) (n int, err error) {
 	//Retry to handle dropped / spotty connections
 	//AWS SDK retry strategy will only handle failed API calls, but not failed reads on the underlying stream
 	//AWS SDK will also not retry on client errors, e.g. no network connection is present
@@ -111,7 +111,7 @@ func (r *S3Reader) Read(p []byte) (n int, err error) {
 		}
 
 		if shouldRetry {
-			fmt.Printf("Error in S3Reader.Read: (%v). Retrying...\n", err)
+			fmt.Printf("Error in s3Reader.Read: (%v). Retrying...\n", err)
 			time.Sleep(r.config.RetryWait)
 			continue
 		}
@@ -122,7 +122,7 @@ func (r *S3Reader) Read(p []byte) (n int, err error) {
 	return
 }
 
-func (r *S3Reader) read(p []byte) (n int, err error) {
+func (r *s3Reader) read(p []byte) (n int, err error) {
 	if r.bufferEnd != 0 && r.bufferStart != r.bufferEnd {
 		return r.copyInto(p)
 	}
@@ -164,7 +164,7 @@ func (r *S3Reader) read(p []byte) (n int, err error) {
 	return r.copyInto(p)
 }
 
-func (r *S3Reader) copyInto(p []byte) (n int, err error) {
+func (r *s3Reader) copyInto(p []byte) (n int, err error) {
 	n = copy(p, r.buffer[r.bufferStart:r.bufferEnd])
 	r.bufferStart += int64(n)
 
@@ -176,12 +176,12 @@ func (r *S3Reader) copyInto(p []byte) (n int, err error) {
 	return n, nil
 }
 
-func (r *S3Reader) resetBuffer() {
+func (r *s3Reader) resetBuffer() {
 	r.bufferStart = 0
 	r.bufferEnd = 0
 }
 
-func (r *S3Reader) Seek(offset int64, whence int) (newOffset int64, err error) {
+func (r *s3Reader) Seek(offset int64, whence int) (newOffset int64, err error) {
 	oldPos := r.offset
 
 	switch whence {

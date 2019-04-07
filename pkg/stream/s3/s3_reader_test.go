@@ -63,10 +63,10 @@ func TestS3Reader_Read_ReadFails_Retries(t *testing.T) {
 			Body: ioutil.NopCloser(strings.NewReader(message)),
 		}, nil).Times(1)
 
-	config := NewS3ReaderConfig()
+	config := newS3ReaderConfig()
 	config.RetryWait = 1 * time.Nanosecond
 	config.NumRetries = 3
-	s3Reader, _ := NewS3ReaderWithConfig(mockS3Client, testBucket, testKey, config)
+	s3Reader, _ := newS3ReaderWithConfig(mockS3Client, testBucket, testKey, config)
 
 	content := make([]byte, 2)
 	_, err := s3Reader.Read(content)
@@ -88,10 +88,10 @@ func TestS3Reader_Read_ReadFails_ExhaustsAllRetries(t *testing.T) {
 			Body: ioutil.NopCloser(&errReader{}),
 		}, nil).Times(4)
 
-	config := NewS3ReaderConfig()
+	config := newS3ReaderConfig()
 	config.RetryWait = 1 * time.Nanosecond
 	config.NumRetries = 3
-	s3Reader, _ := NewS3ReaderWithConfig(mockS3Client, testBucket, testKey, config)
+	s3Reader, _ := newS3ReaderWithConfig(mockS3Client, testBucket, testKey, config)
 
 	_, err := s3Reader.Read(make([]byte, 1))
 	assert.True(t, err != nil)
@@ -109,7 +109,7 @@ func TestS3Reader_Read_CallFails_ReturnsError(t *testing.T) {
 	mockS3Client.EXPECT().GetObjectWithContext(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 		&s3.GetObjectOutput{}, fmt.Errorf("Call failed")).Times(1)
 
-	s3Reader, _ := NewS3Reader(mockS3Client, testBucket, testKey)
+	s3Reader, _ := newS3ReaderBucketAndKey(mockS3Client, testBucket, testKey)
 
 	_, err := s3Reader.Read(make([]byte, 1))
 	assert.True(t, err != nil)
@@ -125,9 +125,9 @@ func TestS3Reader_Read_ShouldBuffer(t *testing.T) {
 		Body: ioutil.NopCloser(strings.NewReader(testBodyContent[2:4])),
 	}, nil).Times(1)
 
-	config := NewS3ReaderConfig()
+	config := newS3ReaderConfig()
 	config.BufferSize = 2
-	s3Reader, _ := NewS3ReaderWithConfig(mockS3Client, testBucket, testKey, config)
+	s3Reader, _ := newS3ReaderWithConfig(mockS3Client, testBucket, testKey, config)
 
 	//First call will read from s3 since the buffer is empty.
 	//Second call should read from internal buffer
@@ -142,7 +142,7 @@ func TestS3Reader_Seek_ResetsBuffer(t *testing.T) {
 	defer ctrl.Finish()
 	mockS3Client := NewMockS3API(ctrl)
 	setupS3MockExpects(mockS3Client)
-	s3Reader, _ := NewS3Reader(mockS3Client, testBucket, testKey)
+	s3Reader, _ := newS3ReaderBucketAndKey(mockS3Client, testBucket, testKey)
 
 	//Read to fill the buffer
 	s3Reader.Read(make([]byte, 1))
@@ -157,7 +157,7 @@ func TestS3Reader_SeekNoop_DoesNotResetBuffer(t *testing.T) {
 	defer ctrl.Finish()
 	mockS3Client := NewMockS3API(ctrl)
 	setupS3MockExpects(mockS3Client)
-	s3Reader, _ := NewS3Reader(mockS3Client, testBucket, testKey)
+	s3Reader, _ := newS3ReaderBucketAndKey(mockS3Client, testBucket, testKey)
 
 	//Read to fill the buffer
 	s3Reader.Read(make([]byte, 1))
@@ -175,7 +175,7 @@ func TestS3Reader_Seek_SeeksToCorrectPosition(t *testing.T) {
 		ContentLength: aws.Int64(int64(len(testBodyContent))),
 		ETag:          aws.String(testEtag),
 	}, nil).Times(1)
-	s3Reader, _ := NewS3Reader(mockS3Client, testBucket, testKey)
+	s3Reader, _ := newS3ReaderBucketAndKey(mockS3Client, testBucket, testKey)
 
 	s3Reader.Seek(5, io.SeekCurrent)
 	assert.True(t, s3Reader.offset == 5)

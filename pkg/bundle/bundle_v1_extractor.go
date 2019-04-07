@@ -1,7 +1,7 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package extractors
+package bundle
 
 import (
 	"archive/tar"
@@ -16,26 +16,26 @@ const (
 
 var expectedFiles = [...]string{metadataFileName, bundleFileName}
 
-// Knows how to extract all files from a v1 bundle
-type BundleV1Extractor struct {
+// Knows how to Extract all files from a v1 bundle
+type v1Extractor struct {
 
 	// the stream where the bundle's bytes are read from
 	readStream io.ReadSeeker
 }
 
-func NewBundleV1Extractor(reader io.ReadSeeker) Extractor {
-	return &BundleV1Extractor{
+func newBundleV1Extractor(reader io.ReadSeeker) *v1Extractor {
+	return &v1Extractor{
 		readStream: reader,
 	}
 }
 
-func (e *BundleV1Extractor) Extract(extractLocation string, fs file_system.FileSystem) error {
-	return e.ExtractWithTarReader(TarReaderFromStream(e.readStream), extractLocation, fs)
+func (e *v1Extractor) Extract(extractLocation string, fs file_system.FileSystem) error {
+	return e.extractWithTarReader(tarReaderFromStream(e.readStream), extractLocation, fs)
 }
 
-func (e *BundleV1Extractor) ExtractWithTarReader(tarReader *tar.Reader, extractLocation string, fs file_system.FileSystem) error {
-	// crete the extract location if it doesn't exist
-	extractLocationErr := fs.MkdirAll(extractLocation, DefaultFileMode)
+func (e *v1Extractor) extractWithTarReader(tarReader *tar.Reader, extractLocation string, fs file_system.FileSystem) error {
+	// crete the Extract location if it doesn't exist
+	extractLocationErr := fs.MkdirAll(extractLocation, defaultFileMode)
 	if extractLocationErr != nil {
 		return extractLocationErr
 	}
@@ -51,9 +51,9 @@ func (e *BundleV1Extractor) ExtractWithTarReader(tarReader *tar.Reader, extractL
 			return err
 		}
 
-		// we only extract when they are expected files
+		// we only Extract when they are expected files
 		if isExpectedFile(header.Name) {
-			extractErr := NewTarExtractor(tarReader).Extract(extractLocation, fs)
+			extractErr := newTarExtractor(tarReader).Extract(extractLocation, fs)
 			if extractErr != nil {
 				return extractErr
 			}

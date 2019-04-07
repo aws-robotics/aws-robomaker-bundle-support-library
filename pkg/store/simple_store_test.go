@@ -5,8 +5,7 @@ package store
 
 import (
 	"errors"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -27,14 +26,14 @@ func TestSimpleStore_Put_WithValidItem_ShouldPut(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockExtractor := extractors.NewMockExtractor(ctrl)
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockExtractor := NewMockExtractor(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	// assert that this is called only once
 	mockExtractor.EXPECT().Extract(expectedExtractLocationForFirst, mockFileSystem).Return(nil).Times(1)
 
 	internalCache := make(map[string]storeItem)
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -72,15 +71,15 @@ func TestSimpleStore_Put_WithExtractError_ShouldNotPut(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockExtractor := extractors.NewMockExtractor(ctrl)
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockExtractor := bundle.NewMockExtractor(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	extractError := errors.New("Extraction Error")
 
 	// Return an extraction error
 	mockExtractor.EXPECT().Extract(expectedExtractLocationForFirst, mockFileSystem).Return(extractError).Times(1)
 
-	bundleStore := NewSimpleStore(cacheRootPath, mockFileSystem)
+	bundleStore := newSimpleStore(cacheRootPath, mockFileSystem)
 
 	// assert doesn't exist in the storeItems
 	assert.False(t, bundleStore.Exists(sha256First))
@@ -98,12 +97,12 @@ func TestSimpleStore_Load_WhenKeyDoesNotExist_ShouldLoad(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, nil).Times(1)
 
 	internalCache := make(map[string]storeItem)
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -123,12 +122,12 @@ func TestSimpleStore_Load_WhenKeyExist_ShouldLoad(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, nil).Times(3)
 
 	internalCache := make(map[string]storeItem)
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -148,12 +147,12 @@ func TestSimpleStore_Load_WhenKeyNotExistOnDisk_ShouldNotLoad(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, os.ErrNotExist).Times(1)
 
 	internalCache := make(map[string]storeItem)
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -168,9 +167,9 @@ func TestSimpleStore_Get_WhenDoesNotExist_ShouldReturnEmptyString(t *testing.T) 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
-	bundleStore := NewSimpleStore(cacheRootPath, mockFileSystem)
+	bundleStore := newSimpleStore(cacheRootPath, mockFileSystem)
 
 	assert.Equal(t, "", bundleStore.GetPath(sha256First))
 }
@@ -185,7 +184,7 @@ func TestSimpleStore_Get_WhenExist_ShouldReturnExpectedPath(t *testing.T) {
 	internalCache := make(map[string]storeItem)
 	internalCache[sha256First] = item
 
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 	}
@@ -198,7 +197,7 @@ func TestSimpleStore_GetInUseItemKeys_ShouldReturnInUseKeyOnly(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	item_notInUse := storeItem{
 		key:        sha256First,
@@ -216,7 +215,7 @@ func TestSimpleStore_GetInUseItemKeys_ShouldReturnInUseKeyOnly(t *testing.T) {
 	internalCache[sha256First] = item_notInUse
 	internalCache[sha256Second] = item_InUse
 
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -233,17 +232,17 @@ func TestSimpleStore_RootPath_ReturnsRootPath(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	rootPath := "testRootPath"
-	bundleStore := NewSimpleStore(rootPath, mockFileSystem)
+	bundleStore := newSimpleStore(rootPath, mockFileSystem)
 
 	assert.Equal(t, rootPath, bundleStore.RootPath())
 }
 
 func TestSimpleStore_Release_KeyNotFound_ShouldReturnError(t *testing.T) {
 	t.Parallel()
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: make(map[string]storeItem),
 	}
@@ -265,7 +264,7 @@ func TestSimpleStore_Release_KeyFound_ShouldRelease(t *testing.T) {
 	internalCache := make(map[string]storeItem)
 	internalCache[sha256First] = item1
 
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 	}
@@ -304,12 +303,12 @@ func TestSimpleStore_Cleanup_ShouldCleanupOnlyUnprotectedItems(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	mockFileSystem.EXPECT().RemoveAll(item2.pathToItem)
 	mockFileSystem.EXPECT().RemoveAll(item3.pathToItem)
 
-	bundleStore := simpleStore{
+	bundleStore := SimpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,

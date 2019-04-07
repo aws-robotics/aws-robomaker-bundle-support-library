@@ -1,7 +1,7 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package extractors
+package bundle
 
 import (
 	"errors"
@@ -22,7 +22,7 @@ func TestTarGzExtractor_Extract_WithNoErrors_ShouldExtract(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockArchiver := NewMockArchiver(ctrl)
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	mockFileSystem.EXPECT().MkdirAll(extractLocation, expectedFileMode).Return(nil)
 	mockArchiver.EXPECT().Read(nil, extractLocation).Return(nil)
@@ -39,7 +39,7 @@ func TestTarGzExtractor_Extract_WithMkDirAllErrors_ShouldErrorAndNotExtract(t *t
 	defer ctrl.Finish()
 
 	mockArchiver := NewMockArchiver(ctrl)
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	mkdirAllError := errors.New("MkDirAll Error")
 
@@ -58,7 +58,7 @@ func TestTarGzExtractor_Extract_WithExtractErrors_ShouldError(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockArchiver := NewMockArchiver(ctrl)
-	mockFileSystem := file_system.NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFileSystem(ctrl)
 
 	tarGzErr := errors.New("tarGzErr")
 

@@ -1,7 +1,12 @@
-package extractors
+package bundle
 
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+
+//go:generate mockgen -destination=mock_file_system.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileSystem
+//go:generate mockgen -destination=mock_file.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system File
+//go:generate mockgen -destination=mock_file_info.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileInfo
+
 
 import (
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/3p/archiver"
@@ -9,29 +14,25 @@ import (
 	"io"
 )
 
-// knows how to extract from a tar.gz or a tar using archiver.Archiver interface
+// knows how to Extract from a tar.gz or a tar using archiver.Archiver interface
 type tarGzExtractor struct {
 	// the stream where the tar.gz bytes are read from
 	readStream        io.Reader
 	archiverInterface archiver.Archiver
 }
 
-func NewTarGzExtractor(reader io.Reader) Extractor {
-	return newTarGzExtractor(reader, archiver.TarGz)
+func newTarExtractor(reader io.Reader) *tarGzExtractor {
+	return newExtractor(reader, archiver.Tar)
 }
 
-func NewTarExtractor(reader io.Reader) Extractor {
-	return newTarGzExtractor(reader, archiver.Tar)
-}
-
-func newTarGzExtractor(reader io.Reader, archiverInterface archiver.Archiver) Extractor {
+func newExtractor(reader io.Reader, archiverInterface archiver.Archiver) *tarGzExtractor {
 	return &tarGzExtractor{
 		readStream:        reader,
 		archiverInterface: archiverInterface,
 	}
 }
 
-func ExtractorFromFileName(reader io.Reader, fileName string) Extractor {
+func extractorFromFileName(reader io.Reader, fileName string) *tarGzExtractor {
 	archiverInterface := archiver.MatchingFormat(fileName)
 
 	if archiverInterface == nil {
@@ -49,13 +50,13 @@ func (e *tarGzExtractor) Extract(extractLocation string, fs file_system.FileSyst
 }
 
 func (e *tarGzExtractor) ExtractWithArchiver(extractLocation string, fs file_system.FileSystem, archiverInterface archiver.Archiver) error {
-	// crete the extract location if it doesn't exist
-	extractLocationErr := fs.MkdirAll(extractLocation, DefaultFileMode)
+	// crete the Extract location if it doesn't exist
+	extractLocationErr := fs.MkdirAll(extractLocation, defaultFileMode)
 	if extractLocationErr != nil {
 		return extractLocationErr
 	}
 
-	// Now, extract the bytes
+	// Now, Extract the bytes
 	extractErr := archiverInterface.Read(e.readStream, extractLocation)
 	if extractErr != nil {
 		return extractErr

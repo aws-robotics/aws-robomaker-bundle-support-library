@@ -1,11 +1,8 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+// Package file_system provides an interface over file system interactions. This allows for easy mocking in tests.
 package file_system
-
-//go:generate mockgen -destination=mock_file_system.go -package=file_system github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileSystem
-//go:generate mockgen -destination=mock_file.go -package=file_system github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system File
-//go:generate mockgen -destination=mock_file_info.go -package=file_system github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileInfo
 
 import (
 	"io"

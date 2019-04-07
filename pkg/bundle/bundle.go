@@ -1,13 +1,26 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package bundle
+/*
+Package bundle implements a provider to extract, parse, and manage bundles.
 
-//go:generate mockgen -destination=mock_bundle.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Bundle
+Basic Example:
+
+	cachePath := "./cache"
+	bundleStore := store.NewSimpleStore(cachePath)
+
+	bundlePath := "bundle"
+	prefixPath := "prefix"
+
+	bundleProvider := bundle.NewProvider(bundleStore)
+	b, _ := bundleProvider.GetBundle(bundlePath)
+	b.SourceCommand()
+
+*/
+package bundle
 
 import (
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"path/filepath"
 )
 
@@ -16,10 +29,7 @@ const (
 	standardPosixSourceCommandFormat = "BUNDLE_CURRENT_PREFIX=%s . %s/setup.sh;"
 )
 
-// Bundle's responsibility is to provide the correct source commands for the application to execute.
-// The contents of the directories in the source commands are guaranteed to be available on disk by the BundleCache.
 type Bundle interface {
-
 	// List of commands that should be executed
 	// to insert the bundle's contents into
 	// a shell environment
@@ -32,28 +42,38 @@ type Bundle interface {
 
 	// List of commands that should be executed
 	// to insert the bundle's contents into
-	// a shell/POSIX-standard environment
+	// a shell-standard environment
 	//
 	// The root path in the source commands will be replaced with location.
 	// This is useful if you mount the store in a container want to access them in the container's mounted location.
 	SourceCommandsUsingLocation(location string) []string
+
+	// List of commands that should be executed
+	// to insert the bundle's contents into
+	// a POSIX-standard environment
+	//
+	// The root path in the source commands will be replaced with location.
+	// This is useful if you mount the store in a container want to access them in the container's mounted location.
 	PosixSourceCommandsUsingLocation(location string) []string
 
-	// Releases all resources that this Bundle holds
+	// Releases all resources that this bundle holds
 	Release()
 }
 
-// Create a new bundle. Give it an array of item paths. Bundle knows how to construct source commands
+
+// Create a new bundle. Give it an array of item paths. bundle knows how to construct source commands
 // from the item paths
-func NewBundle(bundleStore store.BundleStore, itemKeys []string) Bundle {
+func newBundle(bundleStore Cache, itemKeys []string) Bundle {
 	return &bundle{
 		bundleStore: bundleStore,
 		itemKeys:    itemKeys,
 	}
 }
 
+// bundle's responsibility is to provide the correct source commands for the application to execute.
+// The contents of the directories in the source commands are guaranteed to be available on disk by the BundleCache.
 type bundle struct {
-	bundleStore store.BundleStore
+	bundleStore Cache
 	itemKeys    []string
 }
 

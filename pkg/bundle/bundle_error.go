@@ -6,31 +6,31 @@ package bundle
 import "fmt"
 
 const (
-	ERROR_TYPE_CONTENT_ID = "CONTENT_ID"
-	ERROR_TYPE_SOURCE     = "SOURCE"
-	ERROR_TYPE_FORMAT     = "FORMAT"
-	ERROR_TYPE_EXTRACTION = "EXTRACTION"
+	errorTypeContentId  = "CONTENT_ID"
+	errorTypeSource     = "SOURCE"
+	errorTypeFormat     = "FORMAT"
+	errorTypeExtraction = "EXTRACTION"
 )
 
-type BundleError struct {
+type bundleError struct {
 	cause     error
 	errorType string
 }
 
-func (err *BundleError) Error() string {
+func (err *bundleError) Error() string {
 	return fmt.Sprintf("[%s] bundle error: %v", err.errorType, err.cause)
 }
 
-func (err *BundleError) GetCause() error {
+func (err *bundleError) GetCause() error {
 	return err.cause
 }
 
-func (err *BundleError) GetErrorType() string {
+func (err *bundleError) GetErrorType() string {
 	return err.errorType
 }
 
-func NewBundleError(err error, errorType string) *BundleError {
-	return &BundleError{
+func newBundleError(err error, errorType string) *bundleError {
+	return &bundleError{
 		cause:     err,
 		errorType: errorType,
 	}

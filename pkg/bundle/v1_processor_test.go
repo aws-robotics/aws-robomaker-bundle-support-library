@@ -5,8 +5,6 @@ package bundle
 
 import (
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -17,7 +15,7 @@ const (
 	rootPath = "/testing_root"
 )
 
-// Matcher that tests for BundleV1Extractor
+// Matcher that tests for v1Extractor
 type ofExtractorV1 struct {
 }
 
@@ -26,12 +24,12 @@ func OfExtractorV1() gomock.Matcher {
 }
 
 func (o *ofExtractorV1) Matches(x interface{}) bool {
-	_, ok := x.(*extractors.BundleV1Extractor)
+	_, ok := x.(*v1Extractor)
 	return ok
 }
 
 func (o *ofExtractorV1) String() string {
-	return "expected type: *extractors.BundleV1Extractor"
+	return "expected type: *extractors.v1Extractor"
 }
 
 func TestBundleProcessorV1_Extract_ShouldPutIntoStore(t *testing.T) {
@@ -41,11 +39,11 @@ func TestBundleProcessorV1_Extract_ShouldPutIntoStore(t *testing.T) {
 
 	path := "testPath"
 
-	mockBundleStore := store.NewMockBundleStore(ctrl)
+	mockBundleStore := NewMockCache(ctrl)
 	mockBundleStore.EXPECT().Put(gomock.Any(), OfExtractorV1()).Return(path, nil)
 
-	extractor := NewBundleProcessorV1()
-	bundle, err := extractor.Extract(nil, mockBundleStore)
+	extractor := newBundleProcessorV1()
+	bundle, err := extractor.extract(nil, mockBundleStore)
 
 	assert.NotNil(t, bundle)
 	assert.Nil(t, err)
@@ -60,11 +58,11 @@ func TestBundleProcessorV1_Extract_WithError_ShouldReturnError(t *testing.T) {
 
 	expectedError := fmt.Errorf("TestError")
 
-	mockBundleStore := store.NewMockBundleStore(ctrl)
+	mockBundleStore := NewMockCache(ctrl)
 	mockBundleStore.EXPECT().Put(gomock.Any(), OfExtractorV1()).Return(path, expectedError)
 
-	extractor := NewBundleProcessorV1()
-	bundle, err := extractor.Extract(nil, mockBundleStore)
+	extractor := newBundleProcessorV1()
+	bundle, err := extractor.extract(nil, mockBundleStore)
 
 	assert.Nil(t, bundle)
 	assert.NotNil(t, err)
