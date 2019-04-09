@@ -12,12 +12,11 @@ import (
 	"github.com/urfave/cli"
 )
 
-
 func main() {
 	app := cli.NewApp()
 	app.Name = "Bundle Info"
 	app.Usage = "Get source command for bundle"
-	app.Flags = []cli.Flag {
+	app.Flags = []cli.Flag{
 		cli.StringFlag{Name: "bundle", Value: "", Usage: "Path to bundle file"},
 		cli.StringFlag{Name: "prefix", Value: "", Usage: "Prefix to put onto the source command"},
 	}
@@ -53,7 +52,7 @@ func main() {
 			log.Fatal(err)
 			return err
 		}
-		for i := 0; i < len(b.PosixSourceCommands()); i++  {
+		for i := 0; i < len(b.PosixSourceCommands()); i++ {
 			fmt.Print(b.PosixSourceCommandsUsingLocation(prefix_path)[i])
 		}
 
@@ -61,6 +60,3 @@ func main() {
 	}
 	app.Run(os.Args)
 }
-
-
-

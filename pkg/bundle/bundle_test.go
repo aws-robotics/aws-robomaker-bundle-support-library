@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	testRootPath          = "/testing_root"
+	testRootPath      = "/testing_root"
 	containerRootPath = "/container_root"
 )
 
