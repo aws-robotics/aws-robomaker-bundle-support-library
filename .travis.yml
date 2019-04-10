@@ -3,7 +3,6 @@ sudo: false
 matrix:
   include:
     # "1.x" always refers to the latest Go version, inc. the patch release.
-    # e.g. "1.x" is 1.11 until 1.11.1 is available.
     - go: 1.x
       env: LATEST=true GO111MODULE=on
     - go: 1.11.x
@@ -14,7 +13,6 @@ matrix:
     - go: tip
 
 before_install:
-  # gox simplifies building for multiple architectures
   - go get github.com/mitchellh/gox
   - go get github.com/golang/mock/gomock
   - go install github.com/golang/mock/mockgen
@@ -43,8 +41,7 @@ deploy:
   - bundle-helper.linux.amd64
   - bundle-helper.linux.arm
   on:
-    # What to repository to build
     repo: aws-robotics/aws-robomaker-bundle-support-library
-    # Only build binaries for tagged commits
+    branch: master
     tags: true
     condition: $LATEST = true
