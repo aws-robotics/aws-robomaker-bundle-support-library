@@ -7,7 +7,7 @@ A Library in Go that supports download and extraction of colcon-bundle format. h
 ## CLI
 
 We provide a rudimentary CLI to expose the base functionality of this library. 
-With `GOMODULE11=on` you can run it by executing:
+With `GO111MODULE=on` you can run it by executing:
 
 `go run github.com/aws-robotics/aws-robomaker-bundle-support-library/cmd/cli`
 
