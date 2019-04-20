@@ -29,7 +29,6 @@ func (o *ofHeadObjectInput) String() string {
 	return "Bucket: " + o.Bucket + " Key: " + o.Key
 }
 
-
 func TestS3Streamer_WithS3Url_CanStreamTrue(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
@@ -50,7 +49,6 @@ func TestS3Streamer_WithS3Url_CanStreamFalse(t *testing.T) {
 	assert.False(t, streamer.CanStream(filePath))
 }
 
-
 func TestPathToStream_WithS3Url_ShouldReturnUnsupportedError(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
@@ -68,7 +66,6 @@ func TestPathToStream_WithS3Url_ShouldReturnUnsupportedError(t *testing.T) {
 	assert.Nil(t, stream)
 	assert.NotNil(t, err)
 }
-
 
 func TestPathToStream_WithValidS3URL_ShouldReturnValidStream(t *testing.T) {
 	t.Parallel()
@@ -121,4 +118,3 @@ func TestPathToStream_WithS3UrlWithoutClientAndWithoutRegion_ShouldReturnUnsuppo
 	assert.Equal(t, "", md5)
 	assert.NotNil(t, err)
 }
-

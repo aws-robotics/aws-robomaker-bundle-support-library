@@ -14,7 +14,7 @@ import (
 
 const (
 	v2MetadataFileName = "metadata.tar.gz"
-	overlaysFileName = "overlays.json"
+	overlaysFileName   = "overlays.json"
 )
 
 func newBundleProcessorV2() bundleProcessor {

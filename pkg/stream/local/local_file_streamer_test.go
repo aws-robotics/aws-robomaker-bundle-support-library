@@ -75,17 +75,16 @@ func TestLocalFileStreamer_ShouldReturnOpenError_OnStreamOpen(t *testing.T) {
 	filePath := "/test/stream"
 	shouldError := false
 
-
 	mockFile := NewMockFile(ctrl)
 	mockFileSystem := NewMockFileSystem(ctrl)
-	mockFileSystem.EXPECT().Open(filePath).DoAndReturn(func (_ interface{}) (file_system.File, error) {
+	mockFileSystem.EXPECT().Open(filePath).DoAndReturn(func(_ interface{}) (file_system.File, error) {
 		if shouldError {
 			return nil, os.ErrInvalid
 		}
 		shouldError = true
 		return mockFile, nil
 	}).Times(2)
-	mockFile.EXPECT().Read(gomock.Any()).Do(func (ibuf interface{}) {
+	mockFile.EXPECT().Read(gomock.Any()).Do(func(ibuf interface{}) {
 		buf := ibuf.([]byte)
 		copy(buf, contents)
 	}).Return(len(contents), io.EOF).Times(1)
@@ -105,13 +104,12 @@ func TestLocalFileStreamer_ShouldReturnStatError(t *testing.T) {
 	contents := []byte("12345")
 	filePath := "/test/stream"
 
-
 	mockFile := NewMockFile(ctrl)
 	mockFileSystem := NewMockFileSystem(ctrl)
 	mockFileInfo := NewMockFileInfo(ctrl)
 	mockFileSystem.EXPECT().Open(filePath).Return(mockFile, nil).Times(2)
 	mockFile.EXPECT().Stat().Return(mockFileInfo, os.ErrPermission).Times(1)
-	mockFile.EXPECT().Read(gomock.Any()).Do(func (ibuf interface{}) {
+	mockFile.EXPECT().Read(gomock.Any()).Do(func(ibuf interface{}) {
 		buf := ibuf.([]byte)
 		copy(buf, contents)
 	}).Return(len(contents), io.EOF).Times(1)
@@ -131,14 +129,13 @@ func TestLocalFileStreamer_WithLocalFile_ShouldReturnStreamAndMd5(t *testing.T) 
 	contents := []byte("12345")
 	filePath := "/test/stream"
 
-
 	mockFile := NewMockFile(ctrl)
 	mockFileSystem := NewMockFileSystem(ctrl)
 	mockFileInfo := NewMockFileInfo(ctrl)
 	mockFileSystem.EXPECT().Open(filePath).Return(mockFile, nil).Times(2)
 	mockFileInfo.EXPECT().Size().Return(int64(len(contents))).Times(1)
 	mockFile.EXPECT().Stat().Return(mockFileInfo, nil).Times(1)
-	mockFile.EXPECT().Read(gomock.Any()).Do(func (ibuf interface{}) {
+	mockFile.EXPECT().Read(gomock.Any()).Do(func(ibuf interface{}) {
 		buf := ibuf.([]byte)
 		copy(buf, contents)
 	}).Return(len(contents), io.EOF).Times(1)

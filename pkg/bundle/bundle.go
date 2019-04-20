@@ -60,7 +60,6 @@ type Bundle interface {
 	Release()
 }
 
-
 // Create a new bundle. Give it an array of item paths. bundle knows how to construct source commands
 // from the item paths
 func newBundle(bundleStore Cache, itemKeys []string) Bundle {

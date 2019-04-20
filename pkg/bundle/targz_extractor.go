@@ -7,7 +7,6 @@ package bundle
 //go:generate mockgen -destination=mock_file.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system File
 //go:generate mockgen -destination=mock_file_info.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileInfo
 
-
 import (
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/3p/archiver"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"

@@ -12,7 +12,7 @@ Usage:
 		--bundle <path to bundle> \
 		--cache (optional) <path to cache directory (default: cache)> \
 		--prefix (optional) <prefix for source command paths (must include cache directory)>
- */
+*/
 package main
 
 import (

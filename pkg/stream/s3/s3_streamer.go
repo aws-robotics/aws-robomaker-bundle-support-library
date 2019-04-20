@@ -66,7 +66,7 @@ func parseS3Url(s3Url string) (region string, bucket string, key string, err err
 	return "", "", "", fmt.Errorf("Url %v is not a valid s3 url", s3Url)
 }
 
-func createClientFromEnv(region string) (s3iface.S3API, error){
+func createClientFromEnv(region string) (s3iface.S3API, error) {
 	if region == "" {
 		region = os.Getenv("REGION")
 	}

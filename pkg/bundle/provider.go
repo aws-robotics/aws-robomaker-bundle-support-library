@@ -63,7 +63,6 @@ type Extractor interface {
 	Extract(extractLocation string, fs file_system.FileSystem) error
 }
 
-
 type ProgressCallback func(percentDone float32, timeElapsed time.Duration)
 
 type proxyReadSeeker struct {
