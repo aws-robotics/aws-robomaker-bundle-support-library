@@ -29,6 +29,8 @@ const (
 	standardPosixSourceCommandFormat = "BUNDLE_CURRENT_PREFIX=%s . %s/setup.sh;"
 )
 
+// Bundle provides the source commands to
+// apply the bundle's contents to the local environment
 type Bundle interface {
 	// List of commands that should be executed
 	// to insert the bundle's contents into

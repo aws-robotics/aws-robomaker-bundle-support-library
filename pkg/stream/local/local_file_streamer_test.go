@@ -1,11 +1,11 @@
 package local
 
-//go:generate mockgen -destination=mock_file_system.go -package=local github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileSystem
-//go:generate mockgen -destination=mock_file.go -package=local github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system File
-//go:generate mockgen -destination=mock_file_info.go -package=local github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileInfo
+//go:generate mockgen -destination=mock_file_system.go -package=local github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileSystem
+//go:generate mockgen -destination=mock_file.go -package=local github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs File
+//go:generate mockgen -destination=mock_file_info.go -package=local github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileInfo
 
 import (
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -77,7 +77,7 @@ func TestLocalFileStreamer_ShouldReturnOpenError_OnStreamOpen(t *testing.T) {
 
 	mockFile := NewMockFile(ctrl)
 	mockFileSystem := NewMockFileSystem(ctrl)
-	mockFileSystem.EXPECT().Open(filePath).DoAndReturn(func(_ interface{}) (file_system.File, error) {
+	mockFileSystem.EXPECT().Open(filePath).DoAndReturn(func(_ interface{}) (fs.File, error) {
 		if shouldError {
 			return nil, os.ErrInvalid
 		}

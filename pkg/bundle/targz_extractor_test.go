@@ -5,15 +5,15 @@ package bundle
 
 import (
 	"errors"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 const (
-	extractLocation                       = "/extractLocation"
-	expectedFileMode file_system.FileMode = 0755
+	extractLocation              = "/extractLocation"
+	expectedFileMode fs.FileMode = 0755
 )
 
 func TestTarGzExtractor_Extract_WithNoErrors_ShouldExtract(t *testing.T) {

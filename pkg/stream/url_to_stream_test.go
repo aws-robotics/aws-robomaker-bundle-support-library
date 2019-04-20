@@ -16,7 +16,7 @@ func TestPathToStream_WithUnsupportedUrl_ShouldReturnUnsupportedError(t *testing
 
 	filePath := "https://test/stream"
 
-	stream, _, _, err := UrlToStream(filePath)
+	stream, _, _, err := URLToStream(filePath)
 
 	assert.Nil(t, stream)
 	assert.NotNil(t, err)

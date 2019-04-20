@@ -6,7 +6,7 @@ package bundle
 import "fmt"
 
 const (
-	errorTypeContentId  = "CONTENT_ID"
+	errorTypeContentID  = "CONTENT_ID"
 	errorTypeSource     = "SOURCE"
 	errorTypeFormat     = "FORMAT"
 	errorTypeExtraction = "EXTRACTION"

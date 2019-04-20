@@ -33,7 +33,7 @@ func TestSimpleStore_Put_WithValidItem_ShouldPut(t *testing.T) {
 	mockExtractor.EXPECT().Extract(expectedExtractLocationForFirst, mockFileSystem).Return(nil).Times(1)
 
 	internalCache := make(map[string]storeItem)
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -102,7 +102,7 @@ func TestSimpleStore_Load_WhenKeyDoesNotExist_ShouldLoad(t *testing.T) {
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, nil).Times(1)
 
 	internalCache := make(map[string]storeItem)
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -127,7 +127,7 @@ func TestSimpleStore_Load_WhenKeyExist_ShouldLoad(t *testing.T) {
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, nil).Times(3)
 
 	internalCache := make(map[string]storeItem)
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -152,7 +152,7 @@ func TestSimpleStore_Load_WhenKeyNotExistOnDisk_ShouldNotLoad(t *testing.T) {
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, os.ErrNotExist).Times(1)
 
 	internalCache := make(map[string]storeItem)
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -184,7 +184,7 @@ func TestSimpleStore_Get_WhenExist_ShouldReturnExpectedPath(t *testing.T) {
 	internalCache := make(map[string]storeItem)
 	internalCache[sha256First] = item
 
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 	}
@@ -199,23 +199,23 @@ func TestSimpleStore_GetInUseItemKeys_ShouldReturnInUseKeyOnly(t *testing.T) {
 
 	mockFileSystem := NewMockFileSystem(ctrl)
 
-	item_notInUse := storeItem{
+	itemNotInUse := storeItem{
 		key:        sha256First,
 		refCount:   0,
 		pathToItem: filepath.Join(cacheRootPath, sha256First),
 	}
 
-	item_InUse := storeItem{
+	itemInUse := storeItem{
 		key:        sha256Second,
 		refCount:   1,
 		pathToItem: filepath.Join(cacheRootPath, sha256Second),
 	}
 
 	internalCache := make(map[string]storeItem)
-	internalCache[sha256First] = item_notInUse
-	internalCache[sha256Second] = item_InUse
+	internalCache[sha256First] = itemNotInUse
+	internalCache[sha256Second] = itemInUse
 
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,
@@ -242,7 +242,7 @@ func TestSimpleStore_RootPath_ReturnsRootPath(t *testing.T) {
 
 func TestSimpleStore_Release_KeyNotFound_ShouldReturnError(t *testing.T) {
 	t.Parallel()
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: make(map[string]storeItem),
 	}
@@ -264,7 +264,7 @@ func TestSimpleStore_Release_KeyFound_ShouldRelease(t *testing.T) {
 	internalCache := make(map[string]storeItem)
 	internalCache[sha256First] = item1
 
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 	}
@@ -308,7 +308,7 @@ func TestSimpleStore_Cleanup_ShouldCleanupOnlyUnprotectedItems(t *testing.T) {
 	mockFileSystem.EXPECT().RemoveAll(item2.pathToItem)
 	mockFileSystem.EXPECT().RemoveAll(item3.pathToItem)
 
-	bundleStore := SimpleStore{
+	bundleStore := simpleStore{
 		rootPath:   cacheRootPath,
 		storeItems: internalCache,
 		fileSystem: mockFileSystem,

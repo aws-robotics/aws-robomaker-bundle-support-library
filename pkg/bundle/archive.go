@@ -10,13 +10,13 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"io"
 )
 
 const (
-	versionFileName                      = "version"
-	defaultFileMode file_system.FileMode = 0755
+	versionFileName             = "version"
+	defaultFileMode fs.FileMode = 0755
 )
 
 // archive's responsibility is to be able to Extract bundles of all versions, v1, v2, etc.
@@ -84,7 +84,7 @@ func readVersionFromBundle(tarReader *tar.Reader) (string, error) {
 }
 
 func tarReaderFromStream(inputStream io.ReadSeeker) *tar.Reader {
-	var tarReader *tar.Reader = nil
+	var tarReader *tar.Reader
 
 	// try as a gzReader
 	gzReader, gzErr := gzip.NewReader(inputStream)

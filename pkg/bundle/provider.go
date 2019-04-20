@@ -8,13 +8,12 @@ package bundle
 
 import (
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
-	"io"
 	"time"
 )
 
-// BundleCache's responsibility is to manage bundle files on disk.
+// Cache manages the contents of bundles in the local filesystem.
 // Every entry in the storeItems is a directory containing extracted files that bundle uses.
 // The key is a key that uniquely identifies the group of extracted files.
 // Each entry can be a versioned sub-part or a versioned full part of a bundle.
@@ -58,30 +57,27 @@ type Cache interface {
 	Cleanup()
 }
 
-// Extractor's responsibility is to Extract all its contents into the target Extract location
+// Extractor extracts all its contents of an archive into the target location
 type Extractor interface {
-	Extract(extractLocation string, fs file_system.FileSystem) error
+	// Extract contents to extractLocation using fs to write to the local file system.
+	Extract(extractLocation string, fs fs.FileSystem) error
 }
 
+// ProgressCallback returns information about the download and extraction
+// of the bundle to the caller.
 type ProgressCallback func(percentDone float32, timeElapsed time.Duration)
 
-type proxyReadSeeker struct {
-	r                     io.ReadSeeker
-	contentLength         int64
-	readStartTime         time.Time
-	lastUpdated           time.Time
-	callback              ProgressCallback
-	callbackRateInSeconds int
-}
 
-// Provider's responsibility is to create the bundle object for the application to use.
-// It supports fetching from any url supported by UrlToStream.
+// Provider accepts a URL pointing at a bundle and returns the corresponding
+// bundle object. It supports fetching from any URL supported by URLToStream.
 type Provider struct {
 	bundleStore                   Cache
 	progressCallback              ProgressCallback
 	progressCallbackRateInSeconds int
 }
 
+// NewProvider creates a provider which uses the passed in Cache
+// as storage for extracted bundles.
 func NewProvider(bundleStore Cache) *Provider {
 	return &Provider{
 		bundleStore:                   bundleStore,
@@ -89,31 +85,36 @@ func NewProvider(bundleStore Cache) *Provider {
 	}
 }
 
+// SetProgressCallback accepts a function to be invoked
+// at regular intervals during download and extraction.
 func (b *Provider) SetProgressCallback(callback ProgressCallback) {
 	b.progressCallback = callback
 }
 
+// SetProgressCallbackRate sets the rate in seconds the progress
+// callback should be invoked.
 func (b *Provider) SetProgressCallbackRate(rateSeconds int) {
 	b.progressCallbackRateInSeconds = rateSeconds
 }
 
-func (b *Provider) GetVersionedBundle(url string, expectedContentId string) (Bundle, error) {
-	return b.getBundle(url, expectedContentId)
-}
-
+// GetBundle fetches and extracts the bundle pointed to by url
+// and returns its representation.
 func (b *Provider) GetBundle(url string) (Bundle, error) {
-	return b.getBundle(url, "")
+	return b.GetVersionedBundle(url, "")
 }
 
-func (b *Provider) getBundle(url string, expectedContentId string) (Bundle, error) {
+// GetVersionedBundle fetches and extracts the bundle pointed to by
+// URL and verifies its hash matches the passed in expectedContentID.
+// For S3 downloads the etag is used.
+func (b *Provider) GetVersionedBundle(url string, expectedContentID string) (Bundle, error) {
 	// convert our URL to a readable seekable stream
-	stream, contentLength, contentId, streamErr := stream.UrlToStream(url)
+	stream, contentLength, contentID, streamErr := stream.URLToStream(url)
 	if streamErr != nil {
 		return nil, newBundleError(streamErr, errorTypeSource)
 	}
 
-	if expectedContentId != "" && expectedContentId != contentId {
-		return nil, newBundleError(fmt.Errorf("Expected content ID [%v] does not match actual content ID [%v]", expectedContentId, contentId), errorTypeContentId)
+	if expectedContentID != "" && expectedContentID != contentID {
+		return nil, newBundleError(fmt.Errorf("Expected content ID [%v] does not match actual content ID [%v]", expectedContentID, contentID), errorTypeContentID)
 	}
 
 	if b.progressCallback != nil {
@@ -140,26 +141,4 @@ func (b *Provider) getBundle(url string, expectedContentId string) (Bundle, erro
 	}
 
 	return bundle, nil
-}
-
-func (r *proxyReadSeeker) Read(p []byte) (n int, err error) {
-	n, err = r.r.Read(p)
-
-	currentPos, _ := r.Seek(0, io.SeekCurrent)
-	percentDone := float32((float64(currentPos) / float64(r.contentLength)) * 100)
-
-	if time.Since(r.lastUpdated).Seconds() > float64(r.callbackRateInSeconds) || currentPos == r.contentLength {
-		r.callback(percentDone, time.Since(r.readStartTime))
-		r.lastUpdated = time.Now()
-	}
-
-	return
-}
-
-func (r *proxyReadSeeker) Seek(offset int64, whence int) (newOffset int64, err error) {
-	if whence == io.SeekEnd {
-		r.callback(100.0, time.Since(r.readStartTime))
-	}
-
-	return r.r.Seek(offset, whence)
 }

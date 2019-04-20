@@ -93,7 +93,7 @@ func TestPathToStream_WithValidS3URL_ShouldReturnValidStream(t *testing.T) {
 	streamer := NewStreamer(mockS3Client)
 	stream, _, _, err := streamer.CreateStream(url)
 
-	stream, etag, contentLength, err := streamer.CreateStream(url)
+	stream, contentLength, etag, err := streamer.CreateStream(url)
 
 	assert.NotNil(t, stream)
 	assert.Equal(t, expectedEtag, etag)
@@ -112,7 +112,7 @@ func TestPathToStream_WithS3UrlWithoutClientAndWithoutRegion_ShouldReturnUnsuppo
 	streamer := NewStreamer(nil)
 	stream, _, _, err := streamer.CreateStream(url)
 
-	stream, md5, _, err := streamer.CreateStream(url)
+	stream, _, md5, err := streamer.CreateStream(url)
 
 	assert.Nil(t, stream)
 	assert.Equal(t, "", md5)

@@ -1,8 +1,9 @@
-// Package s3 provides a Streamer implementation for AWS S3.
+// Package s3 provides a streamer implementation for AWS S3.
 package s3
 
 import (
 	"fmt"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -12,45 +13,45 @@ import (
 	"regexp"
 )
 
-//go:generate mockgen -destination=mock_file_system.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileSystem
-//go:generate mockgen -destination=mock_file.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system File
-//go:generate mockgen -destination=mock_file_info.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileInfo
+//go:generate mockgen -destination=mock_file_system.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileSystem
+//go:generate mockgen -destination=mock_file.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs File
+//go:generate mockgen -destination=mock_file_info.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileInfo
 
-type Streamer struct {
+type streamer struct {
 	client s3iface.S3API
 }
 
-// Creates a new Streamer that can be used to stream from AWS S3 urls
+// NewStreamer creates a new Streamer that can be used to stream from AWS S3 URLs
 // client can be nil and will then be created using the local environment
-func NewStreamer(client s3iface.S3API) *Streamer {
-	return &Streamer{client}
+func NewStreamer(client s3iface.S3API) stream.Streamer {
+	return &streamer{client}
 }
 
-func (s *Streamer) CanStream(url string) bool {
+func (s *streamer) CanStream(url string) bool {
 	_, _, _, err := parseS3Url(url)
 	return err == nil
 }
 
-func (s *Streamer) CreateStream(url string) (io.ReadSeeker, string, int64, error) {
+func (s *streamer) CreateStream(url string) (io.ReadSeeker, int64, string, error) {
 	region, bucket, key, err := parseS3Url(url)
 	if err != nil {
-		return nil, "", 0, err
+		return nil, 0, "", err
 	}
 
 	// Create a client if one was not provided
 	if s.client == nil {
 		s.client, err = createClientFromEnv(region)
 		if err != nil {
-			return nil, "", 0, err
+			return nil, 0, "", err
 		}
 	}
 
 	s3Reader, err := newS3ReaderBucketAndKey(s.client, bucket, key)
 	if err != nil {
-		return nil, "", 0, err
+		return nil, 0, "", err
 	}
 
-	return s3Reader, s3Reader.Etag, s3Reader.ContentLength, nil
+	return s3Reader, s3Reader.ContentLength, s3Reader.Etag, nil
 }
 
 func parseS3Url(s3Url string) (region string, bucket string, key string, err error) {

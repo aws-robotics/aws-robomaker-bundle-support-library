@@ -61,14 +61,6 @@ func newS3Reader(s3Api s3iface.S3API, bucket string, key string, contentLength i
 	}
 }
 
-type S3ReadError struct {
-	err error
-}
-
-func (e *S3ReadError) Error() string {
-	return e.err.Error()
-}
-
 func newS3ReaderBucketAndKey(s3Api s3iface.S3API, bucket string, key string) (*s3Reader, error) {
 	return newS3ReaderWithConfig(s3Api, bucket, key, newS3ReaderConfig())
 }
@@ -106,7 +98,7 @@ func (r *s3Reader) Read(p []byte) (n int, err error) {
 			}
 		}
 
-		if _, ok := err.(*S3ReadError); ok {
+		if _, ok := err.(*ReadError); ok {
 			shouldRetry = true
 		}
 
@@ -157,7 +149,7 @@ func (r *s3Reader) read(p []byte) (n int, err error) {
 		}
 
 		if readErr != nil {
-			return n, &S3ReadError{readErr}
+			return n, &ReadError{readErr}
 		}
 	}
 

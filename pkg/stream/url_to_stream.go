@@ -4,7 +4,7 @@
 // Package stream provides support to convert a URL into an io.ReadSeeker.
 //
 // Streamers should be registered via RegisterStreamer() in order
-// to use them with UrlToStream()
+// to use them with URLToStream()
 package stream
 
 import (
@@ -27,13 +27,13 @@ type Streamer interface {
 	CreateStream(url string) (io.ReadSeeker, int64, string, error)
 }
 
-// UrlToStream converts a URL into an io.ReadSeeker
+// URLToStream converts a URL into an io.ReadSeeker
 // returns:
 // the io.ReadSeeker
 // the length of the stream in bytes
 // checksum of the file pointed to by path
 // error if any
-func UrlToStream(url string) (io.ReadSeeker, int64, string, error) {
+func URLToStream(url string) (io.ReadSeeker, int64, string, error) {
 	for i := 0; i < len(streamers); i++ {
 		if streamers[i].CanStream(url) {
 			return streamers[i].CreateStream(url)
@@ -42,7 +42,8 @@ func UrlToStream(url string) (io.ReadSeeker, int64, string, error) {
 	return nil, 0, "", fmt.Errorf("no supported Streamer was found for %s", url)
 }
 
-// Adds the Streamer to the list of handlers used by UrlToStream method
+// RegisterStreamer adds the Streamer to the
+// list of Streamer handlers used by URLToStream method
 func RegisterStreamer(s Streamer) {
 	streamers = append(streamers, s)
 }

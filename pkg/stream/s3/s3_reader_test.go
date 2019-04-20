@@ -29,7 +29,7 @@ type errReader struct {
 }
 
 func (e *errReader) Read(p []byte) (n int, err error) {
-	return 0, errors.New("Read failed!")
+	return 0, errors.New("read failed")
 }
 
 func setupS3MockExpects(mockS3Client *MockS3API) {

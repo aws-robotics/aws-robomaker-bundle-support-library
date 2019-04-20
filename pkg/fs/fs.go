@@ -1,8 +1,8 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-// Package file_system provides an interface over file system interactions. This allows for easy mocking in tests.
-package file_system
+// Package fs provides an interface over file system interactions. This allows for easy mocking in tests.
+package fs
 
 import (
 	"io"
@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// FileSystem provides a mockable abstraction over os file methods
 type FileSystem interface {
 	NewFile(fd uintptr, name string) File
 	Create(name string) (File, error)
@@ -22,6 +23,7 @@ type FileSystem interface {
 	WriteFile(filename string, data []byte, mode FileMode) error
 }
 
+// File provides a mockable interface for os file operations
 type File interface {
 	io.Closer
 	io.Reader
@@ -32,6 +34,7 @@ type File interface {
 	Stat() (os.FileInfo, error)
 }
 
+// FileInfo provides a mockable interface for file operations
 type FileInfo interface {
 	Name() string       // base name of the file
 	Size() int64        // length in bytes for regular files; system-dependent for others
@@ -41,6 +44,13 @@ type FileInfo interface {
 	Sys() interface{}   // underlying data source (can return nil)
 }
 
+// NewLocalFS creates a FileSystem interface that
+// interacts with the local file system
+func NewLocalFS() FileSystem {
+	return &osFS{}
+}
+
+// FileMode is a type alias for os.FileMode
 type FileMode os.FileMode
 
 // osFS implements FileSystem using the local disk.
@@ -55,8 +65,4 @@ func (osFS) MkdirAll(name string, mode FileMode) error { return os.MkdirAll(name
 func (osFS) ReadFile(filename string) ([]byte, error)  { return ioutil.ReadFile(filename) }
 func (osFS) WriteFile(filename string, data []byte, mode FileMode) error {
 	return ioutil.WriteFile(filename, data, os.FileMode(mode))
-}
-
-func NewLocalFS() FileSystem {
-	return &osFS{}
 }

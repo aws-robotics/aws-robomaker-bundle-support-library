@@ -5,31 +5,32 @@
 package store
 
 //go:generate mockgen -destination=mock_extractor.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Extractor
-//go:generate mockgen -destination=mock_file_system.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileSystem
-//go:generate mockgen -destination=mock_file.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system File
-//go:generate mockgen -destination=mock_file_info.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system FileInfo
+//go:generate mockgen -destination=mock_file_system.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileSystem
+//go:generate mockgen -destination=mock_file.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs File
+//go:generate mockgen -destination=mock_file_info.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileInfo
 
 import (
 	"fmt"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"os"
 	"path/filepath"
 	"sync"
 )
 
-// Returns a new bundle.Cache to provide key based caching for a bundle provider
-// rootpath is the root directory you want the cache to use for storage
+// NewSimpleStore returns a new bundle.Cache to provide
+// caching for a bundle provider rootpath is the root
+// directory you want the cache to use for storage
 func NewSimpleStore(rootPath string) bundle.Cache {
-	return &SimpleStore{
+	return &simpleStore{
 		rootPath:   rootPath,
 		storeItems: make(map[string]storeItem),
-		fileSystem: file_system.NewLocalFS(),
+		fileSystem: fs.NewLocalFS(),
 	}
 }
 
-func newSimpleStore(rootPath string, fileSystem file_system.FileSystem) bundle.Cache {
-	return &SimpleStore{
+func newSimpleStore(rootPath string, fileSystem fs.FileSystem) bundle.Cache {
+	return &simpleStore{
 		rootPath:   rootPath,
 		storeItems: make(map[string]storeItem),
 		fileSystem: fileSystem,
@@ -45,14 +46,14 @@ type storeItem struct {
 	pathToItem string
 }
 
-type SimpleStore struct {
+type simpleStore struct {
 	rootPath   string
 	storeItems map[string]storeItem
-	fileSystem file_system.FileSystem
+	fileSystem fs.FileSystem
 	mutex      sync.Mutex
 }
 
-func (s *SimpleStore) Load(keys []string) error {
+func (s *simpleStore) Load(keys []string) error {
 	// ensure that Load is an atomic operation
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -79,7 +80,7 @@ func (s *SimpleStore) Load(keys []string) error {
 	return nil
 }
 
-func (s *SimpleStore) Put(key string, extractor bundle.Extractor) (string, error) {
+func (s *simpleStore) Put(key string, extractor bundle.Extractor) (string, error) {
 	// ensure that Put is an atomic operation
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -113,7 +114,7 @@ func (s *SimpleStore) Put(key string, extractor bundle.Extractor) (string, error
 	return itemPath, nil
 }
 
-func (s *SimpleStore) GetPath(key string) string {
+func (s *simpleStore) GetPath(key string) string {
 	// ensure that GetPath is an atomic operation
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -127,7 +128,7 @@ func (s *SimpleStore) GetPath(key string) string {
 	return item.pathToItem
 }
 
-func (s *SimpleStore) Exists(key string) bool {
+func (s *simpleStore) Exists(key string) bool {
 	// ensure that Exists is an atomic operation
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -136,12 +137,12 @@ func (s *SimpleStore) Exists(key string) bool {
 	return exists
 }
 
-func (s *SimpleStore) RootPath() string {
+func (s *simpleStore) RootPath() string {
 	return s.rootPath
 }
 
 // Internally, since we're using refCount, Release will decrement the refCount by 1
-func (s *SimpleStore) Release(key string) error {
+func (s *simpleStore) Release(key string) error {
 	// ensure that Release is an atomic operation
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -159,7 +160,7 @@ func (s *SimpleStore) Release(key string) error {
 	return nil
 }
 
-func (s *SimpleStore) Cleanup() {
+func (s *simpleStore) Cleanup() {
 	// ensure that Cleanup is an atomic operation
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -179,7 +180,7 @@ func (s *SimpleStore) Cleanup() {
 	}
 }
 
-func (s *SimpleStore) GetInUseItemKeys() []string {
+func (s *simpleStore) GetInUseItemKeys() []string {
 	// ensure that GetInUseItemKeys is an atomic operation
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -194,11 +195,11 @@ func (s *SimpleStore) GetInUseItemKeys() []string {
 	return inUseKeys
 }
 
-func (s *SimpleStore) getPathToItem(itemKey string) string {
+func (s *simpleStore) getPathToItem(itemKey string) string {
 	return filepath.Join(s.rootPath, itemKey)
 }
 
-func (s *SimpleStore) getPathToItemAndExistCheck(itemKey string) (string, error) {
+func (s *simpleStore) getPathToItemAndExistCheck(itemKey string) (string, error) {
 
 	itemPath := filepath.Join(s.rootPath, itemKey)
 	if _, err := s.fileSystem.Stat(itemPath); os.IsNotExist(err) {

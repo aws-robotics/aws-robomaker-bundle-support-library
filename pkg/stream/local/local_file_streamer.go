@@ -1,35 +1,40 @@
-// Package local_file contains an implementation of Streamer for local filesystems.
+// Package local contains an implementation of
+// streamer for the local file system
 package local
 
 import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
 	"io"
 	"regexp"
 )
 
-type Streamer struct {
-	fileSystem file_system.FileSystem
+type streamer struct {
+	fileSystem fs.FileSystem
 }
 
-// Creates a new stream.Streamer that can be used to stream from the local file system
-func NewStreamer() *Streamer {
-	return &Streamer{file_system.NewLocalFS()}
+// NewStreamer creates a new stream.streamer that can
+// be used to stream from the local file system.
+// It supports regular unix paths (`/regular/unix/paths`)
+// along with `file://` URLs.
+func NewStreamer() stream.Streamer {
+	return &streamer{fs.NewLocalFS()}
 }
 
-func newStreamer(fileSystem file_system.FileSystem) *Streamer {
-	return &Streamer{fileSystem}
+func newStreamer(fileSystem fs.FileSystem) *streamer {
+	return &streamer{fileSystem}
 }
 
-func (s *Streamer) CanStream(url string) bool {
-	_, err := parseUrl(url)
+func (s *streamer) CanStream(url string) bool {
+	_, err := parseURL(url)
 	return err == nil
 }
 
-func (s *Streamer) CreateStream(url string) (io.ReadSeeker, int64, string, error) {
-	filePath, err := parseUrl(url)
+func (s *streamer) CreateStream(url string) (io.ReadSeeker, int64, string, error) {
+	filePath, err := parseURL(url)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -53,7 +58,7 @@ func (s *Streamer) CreateStream(url string) (io.ReadSeeker, int64, string, error
 }
 
 // Returns a normal filesystem path from a file url (file:///)
-func parseUrl(url string) (string, error) {
+func parseURL(url string) (string, error) {
 	r1 := regexp.MustCompile(`^(\/.*)`)
 	r2 := regexp.MustCompile(`^file:\/\/(\/.*)`)
 	result1 := r1.FindStringSubmatch(url)
@@ -66,7 +71,7 @@ func parseUrl(url string) (string, error) {
 	return "", fmt.Errorf("url: %v is not a valid file system url", url)
 }
 
-func md5SumFile(filePath string, fileSystem file_system.FileSystem) (string, error) {
+func md5SumFile(filePath string, fileSystem fs.FileSystem) (string, error) {
 	file, openErr := fileSystem.Open(filePath)
 	var hashString string
 	if openErr != nil {
