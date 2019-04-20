@@ -67,7 +67,6 @@ type Extractor interface {
 // of the bundle to the caller.
 type ProgressCallback func(percentDone float32, timeElapsed time.Duration)
 
-
 // Provider accepts a URL pointing at a bundle and returns the corresponding
 // bundle object. It supports fetching from any URL supported by URLToStream.
 type Provider struct {
