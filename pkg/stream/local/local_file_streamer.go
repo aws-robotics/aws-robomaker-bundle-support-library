@@ -2,18 +2,23 @@
 // streamer for the local file system
 package local
 
+//go:generate mockgen -destination=mock_file_system.go -package=local github.com/spf13/afero File
+//go:generate mockgen -destination=mock_file.go -package=local github.com/spf13/afero Fs
+//go:generate mockgen -destination=mock_file_info.go -package=local os FileInfo
+//go:generate mockgen -destination=extractor.go -package=local github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Extractor
+
 import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
+	"github.com/spf13/afero"
 	"io"
 	"regexp"
 )
 
 type streamer struct {
-	fileSystem fs.FileSystem
+	fileSystem afero.Fs
 }
 
 // NewStreamer creates a new stream.streamer that can
@@ -21,10 +26,10 @@ type streamer struct {
 // It supports regular unix paths (`/regular/unix/paths`)
 // along with `file://` URLs.
 func NewStreamer() stream.Streamer {
-	return &streamer{fs.NewLocalFS()}
+	return &streamer{afero.NewOsFs()}
 }
 
-func newStreamer(fileSystem fs.FileSystem) *streamer {
+func newStreamer(fileSystem afero.Fs) *streamer {
 	return &streamer{fileSystem}
 }
 
@@ -71,7 +76,7 @@ func parseURL(url string) (string, error) {
 	return "", fmt.Errorf("url: %v is not a valid file system url", url)
 }
 
-func md5SumFile(filePath string, fileSystem fs.FileSystem) (string, error) {
+func md5SumFile(filePath string, fileSystem afero.Fs) (string, error) {
 	file, openErr := fileSystem.Open(filePath)
 	var hashString string
 	if openErr != nil {

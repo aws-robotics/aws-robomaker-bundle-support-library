@@ -3,13 +3,13 @@ package bundle
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//go:generate mockgen -destination=mock_file_system.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileSystem
-//go:generate mockgen -destination=mock_file.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs File
-//go:generate mockgen -destination=mock_file_info.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileInfo
+//go:generate mockgen -destination=mock_file_system.go -package=bundle github.com/spf13/afero File
+//go:generate mockgen -destination=mock_file.go -package=bundle github.com/spf13/afero Fs
+//go:generate mockgen -destination=mock_file_info.go -package=bundle os FileInfo
 
 import (
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/3p/archiver"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
+	"github.com/spf13/afero"
 	"io"
 )
 
@@ -44,11 +44,11 @@ func extractorFromFileName(reader io.Reader, fileName string) *tarGzExtractor {
 	}
 }
 
-func (e *tarGzExtractor) Extract(extractLocation string, fs fs.FileSystem) error {
+func (e *tarGzExtractor) Extract(extractLocation string, fs afero.Fs) error {
 	return e.ExtractWithArchiver(extractLocation, fs, e.archiverInterface)
 }
 
-func (e *tarGzExtractor) ExtractWithArchiver(extractLocation string, fs fs.FileSystem, archiverInterface archiver.Archiver) error {
+func (e *tarGzExtractor) ExtractWithArchiver(extractLocation string, fs afero.Fs, archiverInterface archiver.Archiver) error {
 	// crete the Extract location if it doesn't exist
 	extractLocationErr := fs.MkdirAll(extractLocation, defaultFileMode)
 	if extractLocationErr != nil {

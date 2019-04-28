@@ -27,7 +27,7 @@ func TestSimpleStore_Put_WithValidItem_ShouldPut(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockExtractor := NewMockExtractor(ctrl)
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	// assert that this is called only once
 	mockExtractor.EXPECT().Extract(expectedExtractLocationForFirst, mockFileSystem).Return(nil).Times(1)
@@ -72,7 +72,7 @@ func TestSimpleStore_Put_WithExtractError_ShouldNotPut(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockExtractor := bundle.NewMockExtractor(ctrl)
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	extractError := errors.New("Extraction Error")
 
@@ -97,7 +97,7 @@ func TestSimpleStore_Load_WhenKeyDoesNotExist_ShouldLoad(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, nil).Times(1)
 
@@ -122,7 +122,7 @@ func TestSimpleStore_Load_WhenKeyExist_ShouldLoad(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, nil).Times(3)
 
@@ -147,7 +147,7 @@ func TestSimpleStore_Load_WhenKeyNotExistOnDisk_ShouldNotLoad(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	mockFileSystem.EXPECT().Stat(gomock.Any()).Return(nil, os.ErrNotExist).Times(1)
 
@@ -167,7 +167,7 @@ func TestSimpleStore_Get_WhenDoesNotExist_ShouldReturnEmptyString(t *testing.T) 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	bundleStore := newSimpleStore(cacheRootPath, mockFileSystem)
 
@@ -197,7 +197,7 @@ func TestSimpleStore_GetInUseItemKeys_ShouldReturnInUseKeyOnly(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	itemNotInUse := storeItem{
 		key:        sha256First,
@@ -232,7 +232,7 @@ func TestSimpleStore_RootPath_ReturnsRootPath(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	rootPath := "testRootPath"
 	bundleStore := newSimpleStore(rootPath, mockFileSystem)
@@ -303,7 +303,7 @@ func TestSimpleStore_Cleanup_ShouldCleanupOnlyUnprotectedItems(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	mockFileSystem.EXPECT().RemoveAll(item2.pathToItem)
 	mockFileSystem.EXPECT().RemoveAll(item3.pathToItem)

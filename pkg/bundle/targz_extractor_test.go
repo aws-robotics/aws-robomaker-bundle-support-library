@@ -5,15 +5,15 @@ package bundle
 
 import (
 	"errors"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
 const (
 	extractLocation              = "/extractLocation"
-	expectedFileMode fs.FileMode = 0755
+	expectedFileMode os.FileMode = 0755
 )
 
 func TestTarGzExtractor_Extract_WithNoErrors_ShouldExtract(t *testing.T) {
@@ -22,7 +22,7 @@ func TestTarGzExtractor_Extract_WithNoErrors_ShouldExtract(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockArchiver := NewMockArchiver(ctrl)
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	mockFileSystem.EXPECT().MkdirAll(extractLocation, expectedFileMode).Return(nil)
 	mockArchiver.EXPECT().Read(nil, extractLocation).Return(nil)
@@ -39,7 +39,7 @@ func TestTarGzExtractor_Extract_WithMkDirAllErrors_ShouldErrorAndNotExtract(t *t
 	defer ctrl.Finish()
 
 	mockArchiver := NewMockArchiver(ctrl)
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	mkdirAllError := errors.New("MkDirAll Error")
 
@@ -58,7 +58,7 @@ func TestTarGzExtractor_Extract_WithExtractErrors_ShouldError(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockArchiver := NewMockArchiver(ctrl)
-	mockFileSystem := NewMockFileSystem(ctrl)
+	mockFileSystem := NewMockFs(ctrl)
 
 	tarGzErr := errors.New("tarGzErr")
 

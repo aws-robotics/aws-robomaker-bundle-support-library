@@ -5,7 +5,7 @@ package bundle
 
 import (
 	"archive/tar"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
+	"github.com/spf13/afero"
 	"io"
 )
 
@@ -29,11 +29,11 @@ func newBundleV1Extractor(reader io.ReadSeeker) *v1Extractor {
 	}
 }
 
-func (e *v1Extractor) Extract(extractLocation string, fs fs.FileSystem) error {
+func (e *v1Extractor) Extract(extractLocation string, fs afero.Fs) error {
 	return e.extractWithTarReader(tarReaderFromStream(e.readStream), extractLocation, fs)
 }
 
-func (e *v1Extractor) extractWithTarReader(tarReader *tar.Reader, extractLocation string, fs fs.FileSystem) error {
+func (e *v1Extractor) extractWithTarReader(tarReader *tar.Reader, extractLocation string, fs afero.Fs) error {
 	// crete the Extract location if it doesn't exist
 	extractLocationErr := fs.MkdirAll(extractLocation, defaultFileMode)
 	if extractLocationErr != nil {

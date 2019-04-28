@@ -17,15 +17,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream/local"
-	"io/ioutil"
-	"log"
-	"os"
-
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream/local"
 	"github.com/urfave/cli"
+	"io/ioutil"
+	"log"
+	"os"
 )
 
 func main() {

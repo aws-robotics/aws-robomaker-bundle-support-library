@@ -4,15 +4,15 @@
 // Package store provides a simple implementation of the bundle.Cache interface
 package store
 
+//go:generate mockgen -destination=mock_file_system.go -package=store github.com/spf13/afero File
+//go:generate mockgen -destination=mock_file.go -package=store github.com/spf13/afero Fs
+//go:generate mockgen -destination=mock_file_info.go -package=store os FileInfo
 //go:generate mockgen -destination=mock_extractor.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Extractor
-//go:generate mockgen -destination=mock_file_system.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileSystem
-//go:generate mockgen -destination=mock_file.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs File
-//go:generate mockgen -destination=mock_file_info.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileInfo
 
 import (
 	"fmt"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
+	"github.com/spf13/afero"
 	"os"
 	"path/filepath"
 	"sync"
@@ -25,11 +25,11 @@ func NewSimpleStore(rootPath string) bundle.Cache {
 	return &simpleStore{
 		rootPath:   rootPath,
 		storeItems: make(map[string]storeItem),
-		fileSystem: fs.NewLocalFS(),
+		fileSystem: afero.NewOsFs(),
 	}
 }
 
-func newSimpleStore(rootPath string, fileSystem fs.FileSystem) bundle.Cache {
+func newSimpleStore(rootPath string, fileSystem afero.Fs) bundle.Cache {
 	return &simpleStore{
 		rootPath:   rootPath,
 		storeItems: make(map[string]storeItem),
@@ -49,7 +49,7 @@ type storeItem struct {
 type simpleStore struct {
 	rootPath   string
 	storeItems map[string]storeItem
-	fileSystem fs.FileSystem
+	fileSystem afero.Fs
 	mutex      sync.Mutex
 }
 

@@ -10,13 +10,13 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"io"
+	"os"
 )
 
 const (
 	versionFileName             = "version"
-	defaultFileMode fs.FileMode = 0755
+	defaultFileMode os.FileMode = 0755
 )
 
 // archive's responsibility is to be able to Extract bundles of all versions, v1, v2, etc.

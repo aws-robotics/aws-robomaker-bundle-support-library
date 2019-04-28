@@ -13,9 +13,9 @@ import (
 	"regexp"
 )
 
-//go:generate mockgen -destination=mock_file_system.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileSystem
-//go:generate mockgen -destination=mock_file.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs File
-//go:generate mockgen -destination=mock_file_info.go -package=s3 github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileInfo
+//go:generate mockgen -destination=mock_file_system.go -package=s3 github.com/spf13/afero File
+//go:generate mockgen -destination=mock_file.go -package=s3 github.com/spf13/afero Fs
+//go:generate mockgen -destination=mock_file_info.go -package=s3 os FileInfo
 
 type streamer struct {
 	client s3iface.S3API

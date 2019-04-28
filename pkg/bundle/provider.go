@@ -8,8 +8,8 @@ package bundle
 
 import (
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
+	"github.com/spf13/afero"
 	"time"
 )
 
@@ -60,7 +60,7 @@ type Cache interface {
 // Extractor extracts all its contents of an archive into the target location
 type Extractor interface {
 	// Extract contents to extractLocation using fs to write to the local file system.
-	Extract(extractLocation string, fs fs.FileSystem) error
+	Extract(extractLocation string, fs afero.Fs) error
 }
 
 // ProgressCallback returns information about the download and extraction
