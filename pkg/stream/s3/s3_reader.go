@@ -35,9 +35,7 @@ func newS3ReaderConfig() s3ReaderConfig {
 //Implements io.ReadSeeker
 type s3Reader struct {
 	config        s3ReaderConfig
-	buffer        []byte
-	bufferStart   int64
-	bufferEnd     int64
+	resp          *s3.GetObjectOutput
 	bucket        string
 	key           string
 	s3            s3iface.S3API
@@ -48,9 +46,6 @@ type s3Reader struct {
 
 func newS3Reader(s3Api s3iface.S3API, bucket string, key string, contentLength int64, etag string, config s3ReaderConfig) *s3Reader {
 	return &s3Reader{
-		buffer:        make([]byte, config.BufferSize),
-		bufferStart:   0,
-		bufferEnd:     0,
 		bucket:        bucket,
 		key:           key,
 		s3:            s3Api,
@@ -115,62 +110,59 @@ func (r *s3Reader) Read(p []byte) (n int, err error) {
 }
 
 func (r *s3Reader) read(p []byte) (n int, err error) {
-	if r.bufferEnd != 0 && r.bufferStart != r.bufferEnd {
-		return r.copyInto(p)
+	if r.resp == nil {
+		getObjectErr := r.makeNewS3Request()
+		if getObjectErr != nil {
+			return 0, getObjectErr
+		}
 	}
 
-	r.resetBuffer()
+	bytesRead, readErr := r.resp.Body.Read(p)
 
-	bufferBytes := int64(len(r.buffer))
-	bytesLeft := r.ContentLength - r.offset
-	bytesToRead := min(bufferBytes, bytesLeft)
+	if readErr != nil {
+		// Error throwing from S3, close the current s3 socket
+		defer r.closeS3Socket()
+		if readErr == io.EOF {
+			r.offset += int64(bytesRead)
+			return bytesRead, io.EOF
+		} else {
+			return bytesRead, &ReadError{readErr}
+		}
+	} else {
+		r.offset += int64(bytesRead)
+		return bytesRead, nil
 
+	}
+}
+
+func (r *s3Reader) makeNewS3Request() (err error) {
 	resp, getObjectErr := r.s3.GetObjectWithContext(
 		aws.BackgroundContext(),
 		&s3.GetObjectInput{
 			Bucket:  aws.String(r.bucket),
 			Key:     aws.String(r.key),
 			IfMatch: aws.String(r.Etag),
-			Range:   aws.String(fmt.Sprintf("bytes=%v-%v", r.offset, r.offset+bytesToRead-1)),
+			// Always open a connection read from current position to end of file
+			Range: aws.String(fmt.Sprintf("bytes=%v-%v", r.offset, r.ContentLength-1)),
 		},
-		request.WithResponseReadTimeout(5*time.Second)) //Sets a timeout on the underlying Body.Read() calls. By default, there is no timeout on this read
+		// Sets a timeout on the underlying Body.Read() calls to avoid a S3 connection leaking
+		// since this S3Reader keep connection open until read end of file. This is a client config,
+		// and S3 Service will also terminate the idle connections, which we will rely on the retry
+		// if two reads duration is too long and s3 service terminate the socket.
+		request.WithResponseReadTimeout(10*time.Second))
 
 	if getObjectErr != nil {
-		return 0, getObjectErr
+		return getObjectErr
 	}
-
-	defer resp.Body.Close()
-	for {
-		bytesRead, readErr := resp.Body.Read(r.buffer[r.bufferEnd:])
-		r.bufferEnd += int64(bytesRead)
-
-		if readErr == io.EOF {
-			break
-		}
-
-		if readErr != nil {
-			return n, &ReadError{readErr}
-		}
-	}
-
-	return r.copyInto(p)
+	r.resp = resp
+	return nil
 }
 
-func (r *s3Reader) copyInto(p []byte) (n int, err error) {
-	n = copy(p, r.buffer[r.bufferStart:r.bufferEnd])
-	r.bufferStart += int64(n)
-
-	r.offset += int64(n)
-	if r.offset == r.ContentLength {
-		return n, io.EOF
+func (r *s3Reader) closeS3Socket() {
+	if r.resp != nil {
+		r.resp.Body.Close()
+		r.resp = nil
 	}
-
-	return n, nil
-}
-
-func (r *s3Reader) resetBuffer() {
-	r.bufferStart = 0
-	r.bufferEnd = 0
 }
 
 func (r *s3Reader) Seek(offset int64, whence int) (newOffset int64, err error) {
@@ -191,10 +183,10 @@ func (r *s3Reader) Seek(offset int64, whence int) (newOffset int64, err error) {
 		r.offset = r.ContentLength
 	}
 
-	//Reset buffer when seeking
-	//Special case: Dont reset if the position hasn't changed
+	//Close the socket when seeking
+	//Special case: Dont close if the position hasn't changed
 	if oldPos != r.offset {
-		r.resetBuffer()
+		r.closeS3Socket()
 	}
 
 	return r.offset, nil
