@@ -6,10 +6,10 @@ package bundle
 import "fmt"
 
 const (
-	errorTypeContentID  = "CONTENT_ID"
-	errorTypeSource     = "SOURCE"
-	errorTypeFormat     = "FORMAT"
-	errorTypeExtraction = "EXTRACTION"
+	ErrorTypeContentID  = "CONTENT_ID"
+	ErrorTypeSource     = "SOURCE"
+	ErrorTypeFormat     = "FORMAT"
+	ErrorTypeExtraction = "EXTRACTION"
 )
 
 type bundleError struct {

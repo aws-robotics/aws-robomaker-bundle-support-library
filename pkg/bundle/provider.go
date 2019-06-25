@@ -109,11 +109,11 @@ func (b *Provider) GetVersionedBundle(url string, expectedContentID string) (Bun
 	// convert our URL to a readable seekable stream
 	stream, contentLength, contentID, streamErr := stream.URLToStream(url)
 	if streamErr != nil {
-		return nil, newBundleError(streamErr, errorTypeSource)
+		return nil, newBundleError(streamErr, ErrorTypeSource)
 	}
 
 	if expectedContentID != "" && expectedContentID != contentID {
-		return nil, newBundleError(fmt.Errorf("Expected content ID [%v] does not match actual content ID [%v]", expectedContentID, contentID), errorTypeContentID)
+		return nil, newBundleError(fmt.Errorf("Expected content ID [%v] does not match actual content ID [%v]", expectedContentID, contentID), ErrorTypeContentID)
 	}
 
 	if b.progressCallback != nil {
@@ -130,13 +130,13 @@ func (b *Provider) GetVersionedBundle(url string, expectedContentID string) (Bun
 	// create a bundle archive for the stream
 	bundleArchive, bundleArchiveErr := newBundleArchive(stream)
 	if bundleArchiveErr != nil {
-		return nil, newBundleError(bundleArchiveErr, errorTypeFormat)
+		return nil, newBundleError(bundleArchiveErr, ErrorTypeFormat)
 	}
 
 	// ask our bundle archive to Extract
 	bundle, extractErr := bundleArchive.Extract(b.bundleStore)
 	if extractErr != nil {
-		return nil, newBundleError(extractErr, errorTypeExtraction)
+		return nil, newBundleError(extractErr, ErrorTypeExtraction)
 	}
 
 	return bundle, nil
