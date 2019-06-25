@@ -5,7 +5,6 @@ package bundle
 
 import (
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -39,10 +38,10 @@ func TestBundle_SourceCommands_GivesExpectedCommands(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBundleStore := store.NewMockBundleStore(ctrl)
+	mockBundleStore := NewMockCache(ctrl)
 	mockBundleStore.EXPECT().RootPath().Return(testRootPath).AnyTimes()
 
-	bundle := NewBundle(mockBundleStore, itemKeys)
+	bundle := newBundle(mockBundleStore, itemKeys)
 	sourceCommands := bundle.SourceCommands()
 
 	assert.Equal(t, 3, len(sourceCommands))
@@ -62,9 +61,9 @@ func TestBundle_SourceCommandsUsingLocation_GivesExpectedCommands(t *testing.T) 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBundleStore := store.NewMockBundleStore(ctrl)
+	mockBundleStore := NewMockCache(ctrl)
 
-	bundle := NewBundle(mockBundleStore, itemKeys)
+	bundle := newBundle(mockBundleStore, itemKeys)
 	sourceCommands := bundle.SourceCommandsUsingLocation(containerRootPath)
 
 	assert.Equal(t, 3, len(sourceCommands))
@@ -85,11 +84,11 @@ func TestBundle_Release_ShouldReleaseItemKeys(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBundleStore := store.NewMockBundleStore(ctrl)
+	mockBundleStore := NewMockCache(ctrl)
 	mockBundleStore.EXPECT().Release(itemKeys[0])
 	mockBundleStore.EXPECT().Release(itemKeys[1])
 	mockBundleStore.EXPECT().Release(itemKeys[2])
 
-	bundle := NewBundle(mockBundleStore, itemKeys)
+	bundle := newBundle(mockBundleStore, itemKeys)
 	bundle.Release()
 }

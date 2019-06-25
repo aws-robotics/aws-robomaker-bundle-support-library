@@ -3,13 +3,13 @@
 
 package bundle
 
-// Overlays and Overlay mirror the json structure of the overlays documented in V2 format here:
+// overlays and overlay mirror the json structure of the overlays documented in V2 format here:
 // https://github.com/colcon/colcon-bundle/blob/master/BUNDLE_FORMAT.md
-type Overlays struct {
-	Overlays []Overlay `json:"overlays"`
+type overlays struct {
+	Overlays []overlay `json:"overlays"`
 }
 
-type Overlay struct {
+type overlay struct {
 	FileName string `json:"name"`
 	Sha256   string `json:"sha256"`
 	Offset   int    `json:"offset"`

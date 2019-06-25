@@ -10,7 +10,7 @@ import (
 
 func TestBundleProcessorForVersion_V1_ShouldReturnV1(t *testing.T) {
 	t.Parallel()
-	processor := BundleProcessorForVersion(BundleProcessorVersion1)
+	processor := processorForVersion(processorVersion1)
 
 	// type assert that this is v1
 	_, ok := processor.(*bundleProcessorV1)
@@ -21,7 +21,7 @@ func TestBundleProcessorForVersion_V1_ShouldReturnV1(t *testing.T) {
 
 func TestBundleProcessorForVersion_V2_ShouldReturnV2(t *testing.T) {
 	t.Parallel()
-	processor := BundleProcessorForVersion(BundleProcessorVersion2)
+	processor := processorForVersion(processorVersion2)
 
 	// type assert that this is v2
 	_, ok := processor.(*bundleProcessorV2)
@@ -32,7 +32,7 @@ func TestBundleProcessorForVersion_V2_ShouldReturnV2(t *testing.T) {
 
 func TestBundleProcessorForVersion_Unsupported_ShouldReturnNil(t *testing.T) {
 	t.Parallel()
-	processor := BundleProcessorForVersion("NoVersion")
+	processor := processorForVersion("NoVersion")
 
 	assert.Nil(t, processor)
 }

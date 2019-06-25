@@ -1,34 +1,56 @@
+// Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+/*
+Package cli provides a basic command line application to interact with bundles.
+
+It will extract the bundle to the cache directory and then print the
+command that can be used to source the bundle into the environment.
+
+Usage:
+  go run github.com/aws-robotics/aws-robomaker-bundle-support-library \
+		--bundle <path to bundle> \
+		--cache (optional) <path to cache directory (default: cache)> \
+		--prefix (optional) <prefix for source command paths (must include cache directory)>
+*/
 package main
 
 import (
 	"fmt"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream/local"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream"
 	"github.com/urfave/cli"
 )
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "Bundle Info"
-	app.Usage = "Get source command for bundle"
+	app.Name = "Bundle Helper"
+	app.Usage = "Extracts a bundle and prints the command to source the bundle into a shell environment. " +
+		"Will intelligently cache in the cache directory."
 	app.Flags = []cli.Flag{
 		cli.StringFlag{Name: "bundle", Value: "", Usage: "Path to bundle file"},
 		cli.StringFlag{Name: "prefix", Value: "", Usage: "Prefix to put onto the source command"},
+		cli.StringFlag{Name: "cache", Value: "cache", Usage: "Folder to be used as the cache " +
+			"directory for extracted bundles."},
 	}
+
+	local := local.NewStreamer()
+	stream.RegisterStreamer(local)
+
 	app.Action = func(c *cli.Context) error {
-		fmt.Println("Opening ", c.String("bundle"))
-		cache_path := "./cache"
-		bundle_store := store.NewSimpleStore(cache_path, file_system.NewLocalFS())
+		cachePath := c.String("cache")
+		bundleStore := store.NewSimpleStore(cachePath)
 
-		bundle_path := c.String("bundle")
-		prefix_path := c.String("prefix")
+		bundlePath := c.String("bundle")
+		prefixPath := c.String("prefix")
 
-		files, err := ioutil.ReadDir(cache_path)
+		files, err := ioutil.ReadDir(cachePath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -40,20 +62,20 @@ func main() {
 			}
 		}
 
-		err = bundle_store.Load(keys)
+		err = bundleStore.Load(keys)
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
 
-		bundle_provider := bundle.NewBundleProvider(bundle_store)
-		b, err := bundle_provider.GetBundle(bundle_path)
+		bundleProvider := bundle.NewProvider(bundleStore)
+		b, err := bundleProvider.GetBundle(bundlePath)
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
 		for i := 0; i < len(b.PosixSourceCommands()); i++ {
-			fmt.Print(b.PosixSourceCommandsUsingLocation(prefix_path)[i])
+			fmt.Print(b.PosixSourceCommandsUsingLocation(prefixPath)[i])
 		}
 
 		return nil

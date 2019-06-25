@@ -1,64 +1,35 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+// Package store provides a simple implementation of the bundle.Cache interface
 package store
 
-//go:generate mockgen -destination=mock_bundle_store.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store BundleStore
+//go:generate mockgen -destination=mock_extractor.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Extractor
+//go:generate mockgen -destination=mock_file_system.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileSystem
+//go:generate mockgen -destination=mock_file.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs File
+//go:generate mockgen -destination=mock_file_info.go -package=store github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs FileInfo
 
 import (
 	"fmt"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/extractors"
-	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/file_system"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
+	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/fs"
 	"os"
 	"path/filepath"
 	"sync"
 )
 
-// BundleStore's responsibility is to manage bundle files on disk.
-// Every entry in the storeItems is a directory containing extracted files that bundle uses.
-// The key is a key that uniquely identifies the group of extracted files.
-// Each entry can be a versioned sub-part or a versioned full part of a bundle.
-type BundleStore interface {
-
-	// Put a key into the storeItems, with it's corresponding contents.
-	// If a key already exists, we ignore the Put command, in order to prevent double work.
-	// A reader is passed in, so that BundleStore can write the contents, and extract to disk.
-	// an extractor is passed in so that bundle can call the extractor to extract
-	//
-	// By default, a Put will set the item to "protected"
-	//
-	// Returns:
-	// result for GetPath for this item that is put.
-	// error if there are extract errors
-	Put(key string, extractor extractors.Extractor) (string, error)
-
-	// Load existing keys into memory from disk.
-	// The initial key load into memory refcount is 0
-	// Return:
-	// error if key doesn't exist on disk
-	Load(keys []string) error
-
-	// Given a key, get the root path to the extracted files.
-	// An empty string "" is returned if the key doesn't exist.
-	GetPath(key string) string
-
-	// Given a key, does it exist in the storeItems?
-	Exists(key string) bool
-
-	// Return the root path of the store
-	RootPath() string
-
-	// Get keys from in use (refcount > 0) storeItems
-	GetInUseItemKeys() []string
-
-	// Tell the store that we're done with this item
-	Release(key string) error
-
-	// Deletes storage space of items that are unreferenced
-	Cleanup()
+// NewSimpleStore returns a new bundle.Cache to provide
+// caching for a bundle provider rootpath is the root
+// directory you want the cache to use for storage
+func NewSimpleStore(rootPath string) bundle.Cache {
+	return &simpleStore{
+		rootPath:   rootPath,
+		storeItems: make(map[string]storeItem),
+		fileSystem: fs.NewLocalFS(),
+	}
 }
 
-func NewSimpleStore(rootPath string, fileSystem file_system.FileSystem) BundleStore {
+func newSimpleStore(rootPath string, fileSystem fs.FileSystem) bundle.Cache {
 	return &simpleStore{
 		rootPath:   rootPath,
 		storeItems: make(map[string]storeItem),
@@ -68,7 +39,7 @@ func NewSimpleStore(rootPath string, fileSystem file_system.FileSystem) BundleSt
 
 // Store Item records a key that has been put into the store.
 // protected: boolean. Set to true when we first put into the storeItems. Able to set to false by API.
-//            when cleaning up the storeItems, items with protected set to true will not be cleaned up.
+// when cleaning up the storeItems, items with protected set to true will not be cleaned up.
 type storeItem struct {
 	key        string
 	refCount   int
@@ -78,7 +49,7 @@ type storeItem struct {
 type simpleStore struct {
 	rootPath   string
 	storeItems map[string]storeItem
-	fileSystem file_system.FileSystem
+	fileSystem fs.FileSystem
 	mutex      sync.Mutex
 }
 
@@ -109,7 +80,7 @@ func (s *simpleStore) Load(keys []string) error {
 	return nil
 }
 
-func (s *simpleStore) Put(key string, extractor extractors.Extractor) (string, error) {
+func (s *simpleStore) Put(key string, extractor bundle.Extractor) (string, error) {
 	// ensure that Put is an atomic operation
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
