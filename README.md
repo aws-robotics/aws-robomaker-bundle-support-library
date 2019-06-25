@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/aws-robotics/aws-robomaker-bundle-support-library.svg?branch=development)](https://travis-ci.org/aws-robotics/aws-robomaker-bundle-support-library) [![Go Report Card](https://goreportcard.com/badge/github.com/aws-robotics/aws-robomaker-bundle-support-library)](https://goreportcard.com/report/github.com/aws-robotics/aws-robomaker-bundle-support-library)
+[![GoDoc](https://godoc.org/github.com/aws-robotics/aws-robomaker-bundle-support-library?status.svg)](https://godoc.org/github.com/aws-robotics/aws-robomaker-bundle-support-library)
 ## AWS Robomaker Bundle Support Library
 
 **This API is currently under active development and should not be considered stable.**
