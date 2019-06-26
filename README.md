@@ -22,6 +22,7 @@ Usage:
 --prefix - Prefix to put onto the source command. This is generally used when the CLI is run
 on a host, but the source command will run inside a Docker container. If you have your cache 
 directory mounted as '/cache' in the Docker container you should set prefix to '/cache'.
+--cache - Path to store extracted bundle contents (Default: ./cache)
 
 ```
 
