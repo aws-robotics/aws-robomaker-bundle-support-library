@@ -16,11 +16,13 @@ Usage:
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/stream/local"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle"
 	"github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/store"
@@ -45,9 +47,27 @@ func main() {
 
 	app.Action = func(c *cli.Context) error {
 		cachePath := c.String("cache")
+		if _, err := os.Stat(cachePath); os.IsNotExist(err) {
+			err = os.Mkdir(cachePath, os.ModePerm)
+			if err != nil {
+				fmt.Printf("Failed to create cache directory: %s", cachePath)
+				log.Fatal(err)
+				return err
+			}
+		}
 		bundleStore := store.NewSimpleStore(cachePath)
 
 		bundlePath := c.String("bundle")
+		if bundlePath == "" {
+			fmt.Println("Bundle path cannot be empty.")
+			return errors.New("bundle path cannot be empty")
+		}
+		absBundlePath, err := filepath.Abs(bundlePath)
+		if err != nil {
+			fmt.Printf("Bundle path is invalid: %s", bundlePath)
+			log.Fatal(err)
+			return err
+		}
 		prefixPath := c.String("prefix")
 
 		files, err := ioutil.ReadDir(cachePath)
@@ -69,13 +89,13 @@ func main() {
 		}
 
 		bundleProvider := bundle.NewProvider(bundleStore)
-		b, err := bundleProvider.GetBundle(bundlePath)
+		b, err := bundleProvider.GetBundle(absBundlePath)
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
 		for i := 0; i < len(b.PosixSourceCommands()); i++ {
-			fmt.Print(b.PosixSourceCommandsUsingLocation(prefixPath)[i])
+			fmt.Println(b.PosixSourceCommandsUsingLocation(prefixPath)[i])
 		}
 
 		return nil
