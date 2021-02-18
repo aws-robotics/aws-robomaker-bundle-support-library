@@ -1,0 +1,35 @@
+name: Testing workflows for colcon-bundle
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+  schedule:
+    - cron: '0 * * * *'
+jobs:
+  test:
+    env:
+      GO111MODULE: on
+    strategy:
+      matrix:
+        go-version: [ 1.14.x, 1.15.x ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Golang and dependencies
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+        run: |
+          go get github.com/mitchellh/gox
+          go get github.com/golang/mock/gomock
+          go install github.com/golang/mock/mockgen
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build and Test
+        run: |
+          diff -u <(echo -n) <(gofmt -d .)
+          go build ./...
+          go generate ./...
+          go test -v -race ./...
