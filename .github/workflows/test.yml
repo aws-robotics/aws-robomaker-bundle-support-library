@@ -13,7 +13,7 @@ jobs:
       GO111MODULE: on
     strategy:
       matrix:
-        go-version: [ 1.14.x, 1.15.x ]
+        go-version: [ 1.15.x, 1.16.x ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -38,3 +38,6 @@ jobs:
         run: go generate ./...
       - name: Test
         run: go test -v -race ./...
+      - name: Build Binaries
+        run: gox -osarch="darwin/amd64 windows/amd64 linux/amd64 linux/arm" -output="bundle-helper.{{.OS}}.{{.Arch}}" -verbose ./cmd/cli; fi
+        if: ${{ matrix.go-version == '1.16.x' && matrix.os == 'ubuntu-latest' }}
