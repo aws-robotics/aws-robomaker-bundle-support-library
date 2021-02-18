@@ -21,13 +21,13 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Setup Dependencies
         run: |
           go get github.com/mitchellh/gox
           go get github.com/golang/mock/gomock
           go install github.com/golang/mock/mockgen
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Build
         run: |
           diff -u <(echo -n) <(gofmt -d .)
