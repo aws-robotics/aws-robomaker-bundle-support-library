@@ -1,4 +1,4 @@
-name: Testing workflows for colcon-bundle
+name: Testing workflows for aws-robomaker-bundle-support-library
 on:
   pull_request:
   push:
