@@ -17,10 +17,11 @@ jobs:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Install Golang and dependencies
+      - name: Install Golang
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
+      - name: Setup Dependencies
         run: |
           go get github.com/mitchellh/gox
           go get github.com/golang/mock/gomock
