@@ -6,7 +6,7 @@ on:
       - master
       - dev
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 0 * * *'
 jobs:
   test:
     env:
