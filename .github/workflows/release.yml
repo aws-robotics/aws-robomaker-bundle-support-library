@@ -31,7 +31,6 @@ jobs:
         run: go test -v -race ./...
       - name: Build Binaries
         run: gox -osarch="darwin/amd64 windows/amd64 linux/amd64 linux/arm" -output="bundle-helper.{{.OS}}.{{.Arch}}" -verbose ./cmd/cli
-        if: ${{ matrix.go-version == '1.16.x' && matrix.os == 'ubuntu-latest' }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
