@@ -3,8 +3,8 @@
 
 package bundle
 
-//go:generate mockgen -destination=mock_cache.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Cache
-//go:generate mockgen -destination=mock_extractor.go -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Extractor
+//go:generate mockgen -destination=mock_cache.go -self_package=github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Cache
+//go:generate mockgen -destination=mock_extractor.go -self_package=github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle -package=bundle github.com/aws-robotics/aws-robomaker-bundle-support-library/pkg/bundle Extractor
 
 import (
 	"fmt"

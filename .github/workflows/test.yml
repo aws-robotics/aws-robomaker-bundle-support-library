@@ -1,0 +1,40 @@
+name: Testing workflows for aws-robomaker-bundle-support-library
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  test:
+    env:
+      GO111MODULE: on
+    strategy:
+      matrix:
+        go-version: [ 1.15.x, 1.16.x ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Dependencies
+        run: |
+          go get github.com/mitchellh/gox
+          go get github.com/golang/mock/gomock
+          go install github.com/golang/mock/mockgen
+      - name: Check Format
+        run: if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then exit 1; fi
+        if: matrix.os == 'ubuntu-latest'
+      - name: Build
+        run: |
+          go build ./...
+      - name: Generate
+        run: go generate ./...
+      - name: Test
+        run: go test -v -race ./...

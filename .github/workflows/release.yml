@@ -1,0 +1,83 @@
+name: Release workflow for tagged versions
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Dependencies
+        run: |
+          go get github.com/mitchellh/gox
+          go get github.com/golang/mock/gomock
+          go install github.com/golang/mock/mockgen
+      - name: Check Format
+        run: if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then exit 1; fi
+        if: matrix.os == 'ubuntu-latest'
+      - name: Build
+        run: |
+          go build ./...
+      - name: Generate
+        run: go generate ./...
+      - name: Test
+        run: go test -v -race ./...
+      - name: Build Binaries
+        run: gox -osarch="darwin/amd64 windows/amd64 linux/amd64 linux/arm" -output="bundle-helper.{{.OS}}.{{.Arch}}" -verbose ./cmd/cli
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Windows Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./bundle-helper.windows.amd64.exe
+          asset_name: bundle-helper.windows.amd64.exe
+          asset_content_type: application/octet-stream
+      - name: Upload Linux amd64 Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./bundle-helper.linux.amd64
+          asset_name: bundle-helper.linux.amd64
+          asset_content_type: application/octet-stream
+      - name: Upload Linux arm Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./bundle-helper.linux.arm
+          asset_name: bundle-helper.linux.arm
+          asset_content_type: application/octet-stream
+      - name: Upload Darwin amd64 Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./bundle-helper.darwin.amd64
+          asset_name: bundle-helper.darwin.amd64
+          asset_content_type: application/octet-stream
