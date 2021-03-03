@@ -42,7 +42,7 @@ jobs:
           draft: false
           prerelease: false
       - name: Upload Windows Release Asset
-        id: upload-release-asset
+        id: upload-release-asset-windows
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,7 +52,7 @@ jobs:
           asset_name: bundle-helper.windows.amd64.exe
           asset_content_type: application/octet-stream
       - name: Upload Linux amd64 Release Asset
-        id: upload-release-asset
+        id: upload-release-asset-linux-amd64
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,7 +62,7 @@ jobs:
           asset_name: bundle-helper.linux.amd64
           asset_content_type: application/octet-stream
       - name: Upload Linux arm Release Asset
-        id: upload-release-asset
+        id: upload-release-asset-linux-arm
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -72,7 +72,7 @@ jobs:
           asset_name: bundle-helper.linux.arm
           asset_content_type: application/octet-stream
       - name: Upload Darwin amd64 Release Asset
-        id: upload-release-asset
+        id: upload-release-asset-darwin-amd64
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

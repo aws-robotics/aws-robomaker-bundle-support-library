@@ -26,6 +26,24 @@ directory mounted as '/cache' in the Docker container you should set prefix to '
 
 ```
 
+## Developing
+
+In order to build and run this package from source you should execute the following (Golang 1.16+ recommended):
+
+```
+source environment.sh
+go get github.com/mitchellh/gox
+go get github.com/golang/mock/gomock
+go install github.com/golang/mock/mockgen
+go build ./...
+go generate ./...
+go test -v -race ./...
+```
+
+`environment.sh` is used to set `GOBIN` so that `mockgen` installs properly using Go modules.
+
+NOTE: If you are using Golang version < 1.16 then you may need to set the environment variable `GO111MODULES=on`.
+
 ## License
 
 This library is licensed under the Apache 2.0 License. 
