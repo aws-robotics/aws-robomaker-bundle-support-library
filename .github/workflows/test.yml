@@ -7,6 +7,9 @@ on:
       - dev
   schedule:
     - cron: '0 0 * * *'
+permissions:
+  contents: read
+
 jobs:
   test:
     env:
